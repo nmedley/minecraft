@@ -3,7 +3,6 @@ package mymod;
 import java.awt.Color;
 
 import mymod.armor.MyArmor;
-import mymod.armor.MyLavaArmor;
 import mymod.armor.MyNinjaArmor;
 import mymod.biome.MyBiome;
 import mymod.blocks.MyBlock;
@@ -40,6 +39,7 @@ import net.minecraft.item.EnumArmorMaterial;
 import net.minecraft.item.EnumToolMaterial;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.src.ModLoader;
 import net.minecraft.stats.Achievement;
 import net.minecraft.stats.AchievementList;
@@ -61,7 +61,7 @@ import cpw.mods.fml.common.registry.LanguageRegistry;
 /*If There Is An Error Buy A Tetty Bear!**/
 
 /* 	MOD INFO */
-	@Mod( modid = "mymod", name = "Ninja Mod", version = "1.0")
+	@Mod( modid = "mymod", name = "Death Attck!", version = "1.0")
 	@NetworkMod(clientSideRequired=true, serverSideRequired=false)	
 
 
@@ -93,10 +93,22 @@ public class Main {
         public static Item MyItem_1;
 
 //  DECLARE THE DEATH BOOM!!!!
-        public static Item MyProjectiles_1;
+//        public static Item MyProjectiles_1;
 
 //  DECLARE THE FOOD
         public static Item MyFood_1;
+
+//  DECLARE THE LOVE
+        public static Item MyFood_2;
+
+//  DECLARE THE DIE
+        public static Item MyFood_3;
+
+//  DECLARE THE GOM
+        public static Item MyFood_4;
+
+//  DECLARE THE HOT
+        public static Item MyFood_5;
 
 //  DECLARE THE BLOCK
         public static Block MyBlock_1;
@@ -113,11 +125,7 @@ public class Main {
         public static Item MyLeggings_2;
         public static Item MyBoots_2;
 
-//  DECLARE THE LAVA ARMOR
-        public static Item MyHelmet_3;
-        public static Item MyChest_3;
-        public static Item MyLeggings_3;
-        public static Item MyBoots_3;
+
 
 //  DECLARE THE ARMOR MATERIAL
         															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
@@ -127,9 +135,7 @@ public class Main {
         															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
         public static EnumArmorMaterial MyArmorMaterial_2 = EnumHelper.addArmorMaterial("Death Malo", 200, new int[]{8, 12, 12, 8}, 10);
 
-//  DECLARE THE ARMOR LAVA MATERIAL
-        															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
-        public static EnumArmorMaterial MyArmorMaterial_3 = EnumHelper.addArmorMaterial("Death Boom!!!!", 200, new int[]{8, 12, 12, 8}, 10);
+
 
 //  DECLARE THE BIOME
         public static  BiomeGenBase MyBiome_1;
@@ -201,18 +207,42 @@ public class Main {
         LanguageRegistry.addName(MyItem_1, "Death Head");	
 	
 //  LOAD THE Death Boom!!!!
-        MyProjectiles_1 = new MyItem(2031, "MyProjectiles_1").setCreativeTab(setCreativeTab).setMaxStackSize(64);setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyProjectiles_1, "MyProjectiles_1");
-        LanguageRegistry.addName(MyProjectiles_1, "Death Boom!!!!");
+//        MyProjectiles_1 = new MyItem(2031, "MyProjectiles_1").setCreativeTab(setCreativeTab).setMaxStackSize(64);setCreativeTab(MyCreativeTab_1);
+//        GameRegistry.registerItem(MyProjectiles_1, "MyProjectiles_1");
+//        LanguageRegistry.addName(MyProjectiles_1, "Death Spear");
 
 //  LOAD THE FOOD
    /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
-        MyFood_1 = new MyFood(2040, 8, 80.8F, true, "MyFood_1").setAlwaysEdible().setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        MyFood_1 = new MyFood(2040, 8, 80.8F, true, "MyFood_1").setAlwaysEdible().setPotionEffect(Potion.invisibility.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyFood_1, "MyFood_1");
         LanguageRegistry.addName(MyFood_1, "Death-Melo");
 
+//  LOAD THE LOVE
+   /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
+        MyFood_2 = new MyFood(2041, 8, 80.8F, true, "MyFood_2").setAlwaysEdible().setPotionEffect(Potion.nightVision.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        GameRegistry.registerItem(MyFood_2, "MyFood_2");
+        LanguageRegistry.addName(MyFood_2, "Die-Melo");
+
+//  LOAD THE die
+   /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
+        MyFood_3 = new MyFood(2042, 8, 80.8F, true, "MyFood_3").setAlwaysEdible().setPotionEffect(Potion.heal.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        GameRegistry.registerItem(MyFood_3, "MyFood_3");
+        LanguageRegistry.addName(MyFood_3, "Lava-Die");
+
+//  LOAD THE GOM
+   /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
+        MyFood_4 = new MyFood(2043, 8, 80.8F, true, "MyFood_4").setAlwaysEdible().setPotionEffect(Potion.fireResistance.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        GameRegistry.registerItem(MyFood_4, "MyFood_4");
+        LanguageRegistry.addName(MyFood_4, "Dead Coffee");
+
+//  LOAD THE HOT
+   /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
+        MyFood_5 = new MyFood(2044, 8, 80.8F, true, "MyFood_5").setAlwaysEdible().setPotionEffect(Potion.waterBreathing.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        GameRegistry.registerItem(MyFood_5, "MyFood_5");
+        LanguageRegistry.addName(MyFood_5, "Hot-Dead");
+
 //  LOAD THE BLOCK 
-        MyBlock_1 = new MyBlock(250, Material.rock, "MyBlock_1").setLightValue(1.0F).setResistance(8.8F).setHardness(5.8F).setStepSound(Block.soundGravelFootstep).setCreativeTab(MyCreativeTab_1);
+        MyBlock_1 = new MyBlock(250, Material.rock, "MyBlock_1").setLightValue(50.0F).setResistance(50.0F).setHardness(5.8F).setStepSound(Block.soundGravelFootstep).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerBlock(MyBlock_1, "MyBlock_1");
         LanguageRegistry.addName(MyBlock_1, "Death Head Ore"); 
 		MinecraftForge.setBlockHarvestLevel(MyBlock_1, "pickaxe", 0);
@@ -257,25 +287,7 @@ public class Main {
         GameRegistry.registerItem(MyBoots_2, "MyBoots_2");
         LanguageRegistry.addName(MyBoots_2, "Red Boots");    
         
-//  LOAD LAVA HELMET 
-        MyHelmet_3 = new MyLavaArmor(2068, MyArmorMaterial_3, 0, 0, "mylavaarmor").setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyHelmet_3, "MyHelmet_3");
-        LanguageRegistry.addName(MyHelmet_3, "Lava Helmet");      
-    
-//  LOAD LAVA HELMET
-        MyChest_3 = new MyLavaArmor(2069, MyArmorMaterial_3, 0, 1, "mylavaarmor").setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyChest_3, "MyChest_3");
-        LanguageRegistry.addName(MyChest_3, "Lava Chest");
-
-//   LOAD LAVA HELMET   
-        MyLeggings_3 = new MyLavaArmor(2070, MyArmorMaterial_3, 0, 2, "mylavaarmor").setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyLeggings_3, "MyLeggings_3");
-        LanguageRegistry.addName(MyLeggings_3, "Lava Leggings");
-
-//   LOAD LAVA HELMET   
-        MyBoots_3 = new MyLavaArmor(2071, MyArmorMaterial_3, 0, 3, "mylavaarmor").setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyBoots_3, "MyBoots_3");
-        LanguageRegistry.addName(MyBoots_3, "Lava Boots");        
+        
         
 //  LOAD BIOME
         MyBiome_1 = new MyBiome(30);
@@ -296,18 +308,18 @@ public class Main {
 
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntitySkeleton.class, "Death Skele", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 6, 10, 20, EnumCreatureType.monster, BiomeGenBase.jungle);
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 6, 10, 20, EnumCreatureType.monster, MyBiome_1);     
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 6, 10, 20, EnumCreatureType.monster, BiomeGenBase.swampland);        
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 6, 10, 20, EnumCreatureType.monster, BiomeGenBase.desert);
+        EntityRegistry.addSpawn(MyEntitySkeleton.class, 15, 10, 20, EnumCreatureType.monster, BiomeGenBase.jungle);
+        EntityRegistry.addSpawn(MyEntitySkeleton.class, 15, 10, 20, EnumCreatureType.monster, MyBiome_1);     
+        EntityRegistry.addSpawn(MyEntitySkeleton.class, 15, 10, 20, EnumCreatureType.monster, BiomeGenBase.swampland);        
+        EntityRegistry.addSpawn(MyEntitySkeleton.class, 15, 10, 20, EnumCreatureType.monster, BiomeGenBase.desert);
         registerEntityEgg(MyEntitySkeleton.class, (new Color(253, 181, 8)).getRGB(), (new Color(253, 181, 8)).getRGB());       
         RenderingRegistry.registerEntityRenderingHandler(MyEntitySkeleton.class, new MyRenderSkeleton(new MyModelSkeleton(), 0.3F));
         ModLoader.addLocalization("entity.Death Skele.name", "Death Skele");
 
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEnitiyMinion.class, "Lightning Steve", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEnitiyMinion.class, 6, 8, 28, EnumCreatureType.creature, BiomeGenBase.forest);     
-        EntityRegistry.addSpawn(MyEnitiyMinion.class, 6, 8, 28, EnumCreatureType.monster, MyBiome_1);  
+        EntityRegistry.addSpawn(MyEnitiyMinion.class, 15, 8, 28, EnumCreatureType.creature, BiomeGenBase.forest);     
+        EntityRegistry.addSpawn(MyEnitiyMinion.class, 15, 8, 28, EnumCreatureType.monster, MyBiome_1);  
         registerEntityEgg(MyEnitiyMinion.class, (new Color(239, 231, 23)).getRGB(), (new Color(253, 181, 8)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEnitiyMinion.class, new MyRenderMinion(new MyModelMinion(), 0.3F));
         ModLoader.addLocalization("entity.Lightning Steve.name", "Lightning Steve");
@@ -418,20 +430,35 @@ private void setCreativeTab(Object myCreativeTab_12) {
             'S', Block.dirt,
         });	
 
-//  Projectile RECIPE         
-        GameRegistry.addRecipe(new ItemStack(MyProjectiles_1, 4), new Object[]
-        {
-                
-                
-                "S",
-            'S', MyItem_1,
-        });	
-
 //  FOOD RECIPE         
         GameRegistry.addRecipe(new ItemStack(MyFood_1, 2), new Object[]
         {
                 "SS",
                 "SS",
+            'S', MyItem_1,
+        });
+
+//  LOVE RECIPE         
+        GameRegistry.addRecipe(new ItemStack(MyFood_2, 2), new Object[]
+        {
+                "S",
+            'S', MyItem_1,
+        });
+
+//  DIE RECIPE         
+        GameRegistry.addRecipe(new ItemStack(MyFood_3, 2), new Object[]
+        {
+                "S",
+        		"S",
+            'S', MyItem_1,
+        });
+
+//  GOM RECIPE         
+        GameRegistry.addRecipe(new ItemStack(MyFood_4, 2), new Object[]
+        {
+                "S",
+        		"S",
+        		"S",
             'S', MyItem_1,
         });
 
@@ -506,41 +533,6 @@ private void setCreativeTab(Object myCreativeTab_12) {
             "X X",
             "X X",
         'X', MyFood_1,
-    });
-
-//  HELMET L RECIPE   
-    GameRegistry.addRecipe(new ItemStack(MyHelmet_3, 1), new Object[]
-    {
-            "XXX",
-            "X X",
-            " X ",
-        'X', MyBlock_1,
-    });         
-
-//  CHESTPLATE L RECIPE   
-    GameRegistry.addRecipe(new ItemStack(MyChest_3, 1), new Object[]
-    {
-            "X X",
-            "XXX",
-            "XXX",
-        'X', MyBlock_1,
-    });         
-
-//  LEGGINGS L RECIPE 
-    GameRegistry.addRecipe(new ItemStack(MyLeggings_3, 1), new Object[]
-    {
-            "XXX",
-            "X X",
-            "X X",
-        'X', MyBlock_1,
-    });         
-
-//  BOOTS L RECIPE    
-    GameRegistry.addRecipe(new ItemStack(MyBoots_3, 1), new Object[]
-    {
-            "X X",
-            "X X",
-        'X', MyBlock_1,
     });
 
 /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */	

@@ -1,6 +1,7 @@
 package mymod.entity.minion;
 
 import mymod.Main;
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIFollowParent;
@@ -145,7 +146,7 @@ public class MyEnitiyMinion extends EntityAnimal
      */
     protected int getDropItemId()
     {
-        return Item.feather.itemID;
+        return Item.chickenRaw.itemID;
     }
 
     /**
@@ -154,34 +155,38 @@ public class MyEnitiyMinion extends EntityAnimal
      */
     protected void dropFewItems(boolean par1, int par2)
     {
-        int j = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
+    	int j = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
 
-        for (int k = 0; k < j; ++k)
-     {
-            this.dropItem(Item.redstone.itemID, 8);
-        }
-        
-     {
-            this.dropItem(Item.ingotGold.itemID, 4);
-        }
-       
-     {
-            this.dropItem(Item.gunpowder.itemID, 2);
-        }
-    
-     {
-            this.dropItem(Item.magmaCream.itemID, 2);
-        }
-    
-    {
-            this.dropItem(Item.fermentedSpiderEye.itemID, 2);
-        }
-    
-    }                
-  
+    	for (int k = 0; k < j; ++k)
     	{
+    		this.dropItem(Block.cobblestoneMossy.blockID, 20);
+    	}
+
+    	{
+    		this.dropItem(Item.redstone.itemID, 2);
+    	}
+
+    	{
+    		this.dropItem(Block.trapdoor.blockID, 1);
+    	}
+
+    	{
+    		this.dropItem(Block.vine.blockID, 12);
+    	}
+
+    	{
+    		this.dropItem(Main.MyFood_5.itemID, 2);
+    	}
+
+    	{                  
+    		this.dropItem(Block.mobSpawner.blockID, 1);
+    	}
+
+    }  
+
+    {
     }
-    
+
      
     
     /**

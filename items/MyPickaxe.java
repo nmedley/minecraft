@@ -26,7 +26,8 @@ public class MyPickaxe extends ItemPickaxe {
     public void registerIcons(IconRegister iconRegister)
     {
         this.itemIcon = iconRegister.registerIcon(texturePath);
-    }   
+    }  
+       
 
 
 }
