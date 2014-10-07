@@ -7,6 +7,10 @@ import mymod.armor.MyNinjaArmor;
 import mymod.biome.MyBiome;
 import mymod.blocks.MyBlock;
 import mymod.blocks.MyBlockGen;
+import mymod.entity.creeper.MyEntityCreeper;
+import mymod.entity.creeper.MyRenderCreeper;
+import mymod.entity.ghast.MyEntityGhast;
+import mymod.entity.ghast.MyRenderGhast;
 import mymod.entity.mechne.MyEntityMechne;
 import mymod.entity.mechne.MyModelMechne;
 import mymod.entity.mechne.MyRenderMechne;
@@ -124,8 +128,6 @@ public class Main {
         public static Item MyChest_2;
         public static Item MyLeggings_2;
         public static Item MyBoots_2;
-
-
 
 //  DECLARE THE ARMOR MATERIAL
         															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
@@ -364,7 +366,7 @@ public class Main {
         registerEntityEgg(MyEntityZombie.class, (new Color(255, 255, 255)).getRGB(), (new Color(255, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityZombie.class, new MyRenderZombie());
         ModLoader.addLocalization("entity.Ghost Soldier.name", "Ghost Soldier");  
-  
+
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityMechne.class, "Ghost Mechne", EntityRegistry.findGlobalUniqueEntityId());
         EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.jungle);  
@@ -381,7 +383,21 @@ public class Main {
         RenderingRegistry.registerEntityRenderingHandler(MyEntityMechne.class, new MyRenderMechne(new MyModelMechne(), 0.3F));
         ModLoader.addLocalization("entity.Ghost Mechne.name", "Ghost Mechne");  
      
-    
+    //  REGISTER YOUR ENTITY
+        EntityRegistry.registerGlobalEntityID(MyEntityGhast.class, "Srpent", EntityRegistry.findGlobalUniqueEntityId());
+        EntityRegistry.addSpawn(MyEntityGhast.class, 6, 1, 1, EnumCreatureType.monster, BiomeGenBase.ocean);
+        EntityRegistry.addSpawn(MyEntityGhast.class, 10, 1, 1, EnumCreatureType.monster, MyBiome_1);     
+        registerEntityEgg(MyEntityGhast.class, (new Color(44, 82, 50)).getRGB(), (new Color(136, 222, 191)).getRGB());
+        RenderingRegistry.registerEntityRenderingHandler(MyEntityGhast.class, new MyRenderGhast());
+        ModLoader.addLocalization("entity.Srpent.name", "Srpent");    
+     
+ //  REGISTER YOUR ENTITY
+        EntityRegistry.registerGlobalEntityID(MyEntityCreeper.class, "Blood", EntityRegistry.findGlobalUniqueEntityId());
+        EntityRegistry.addSpawn(MyEntityCreeper.class, 50, 1, 5, EnumCreatureType.monster, BiomeGenBase.desert); 
+        EntityRegistry.addSpawn(MyEntityCreeper.class, 50, 1, 5, EnumCreatureType.monster, MyBiome_1);     
+        registerEntityEgg(MyEntityCreeper.class, (new Color(0, 255, 0)).getRGB(), (new Color(255, 0, 0)).getRGB());
+        RenderingRegistry.registerEntityRenderingHandler(MyEntityCreeper.class, new MyRenderCreeper());
+        ModLoader.addLocalization("entity.Blood.name", "Blood");     
      
 /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */	
 
@@ -389,7 +405,6 @@ public class Main {
 
 private void setCreativeTab(Object myCreativeTab_12) {
 	// TODO Auto-generated method stub
-	
 }
 
 @EventHandler

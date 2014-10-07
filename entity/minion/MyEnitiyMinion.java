@@ -179,7 +179,7 @@ public class MyEnitiyMinion extends EntityAnimal
     	}
 
     	{                  
-    		this.dropItem(Block.mobSpawner.blockID, 1);
+    		this.dropItem(Item.minecartCrate.itemID, 1);
     	}
 
     }  
