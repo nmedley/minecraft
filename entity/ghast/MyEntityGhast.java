@@ -1,257 +1,229 @@
 package mymod.entity.ghast;
 
-import net.minecraft.entity.EntityLiving;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityLargeFireball;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.stats.AchievementList;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.chunk.Chunk;
 
-public class MyEntityGhast extends EntityLiving implements IMob
+public class MyEntityGhast extends EntityFlying implements IMob
 {
-    public float squishAmount;
-    public float squishFactor;
-    public float prevSquishFactor;
+    public int courseChangeCooldown;
+    public double waypointX;
+    public double waypointY;
+    public double waypointZ;
+    private Entity targetedEntity;
 
-    /** the time between each jump of the slime */
-    private int slimeJumpDelay;
+    /** Cooldown time between target loss and new target aquirement. */
+    private int aggroCooldown;
+    public int prevAttackCounter;
+    public int attackCounter;
+
+    /** The explosion radius of spawned fireballs. */
+    private int explosionStrength = 1;
 
     public MyEntityGhast(World par1World)
     {
         super(par1World);
-        int i = 1 << this.rand.nextInt(3);
-        this.yOffset = 0.0F;
-        this.slimeJumpDelay = this.rand.nextInt(20) + 10;
-        this.setSlimeSize(i);
+        this.setSize(4.0F, 4.0F);
+        this.isImmuneToFire = true;
+        this.experienceValue = 5;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public boolean func_110182_bF()
+    {
+        return this.dataWatcher.getWatchableObjectByte(16) != 0;
+    }
+
+    /**
+     * Called when the entity is attacked.
+     */
+    public boolean attackEntityFrom(DamageSource par1DamageSource, float par2)
+    {
+        if (this.isEntityInvulnerable())
+        {
+            return false;
+        }
+        else if ("fireball".equals(par1DamageSource.getDamageType()) && par1DamageSource.getEntity() instanceof EntityPlayer)
+        {
+            super.attackEntityFrom(par1DamageSource, 1000.0F);
+            ((EntityPlayer)par1DamageSource.getEntity()).triggerAchievement(AchievementList.ghast);
+            return true;
+        }
+        else
+        {
+            return super.attackEntityFrom(par1DamageSource, par2);
+        }
     }
 
     protected void entityInit()
     {
         super.entityInit();
-        this.dataWatcher.addObject(16, new Byte((byte)1));
+        this.dataWatcher.addObject(16, Byte.valueOf((byte)0));
     }
 
-    protected void setSlimeSize(int par1)
+    protected void applyEntityAttributes()
     {
-        this.dataWatcher.updateObject(16, new Byte((byte)par1));
-        this.setSize(0.6F * (float)par1, 0.6F * (float)par1);
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute((double)(par1 * par1));
-        this.setHealth(this.getMaxHealth());
-        this.experienceValue = par1;
-    }
-
-    /**
-     * Returns the size of the slime.
-     */
-    public int getSlimeSize()
-    {
-        return this.dataWatcher.getWatchableObjectByte(16);
-    }
-
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
-    {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setInteger("Size", this.getSlimeSize() - 1);
-    }
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
-    {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.setSlimeSize(par1NBTTagCompound.getInteger("Size") + 1);
-    }
-
-    /**
-     * Returns the name of a particle effect that may be randomly created by EntitySlime.onUpdate()
-     */
-    protected String getSlimeParticle()
-    {
-        return "slime";
-    }
-
-    /**
-     * Returns the name of the sound played when the slime jumps.
-     */
-    protected String getJumpSound()
-    {
-        return "mob.slime." + (this.getSlimeSize() > 1 ? "big" : "small");
-    }
-
-    /**
-     * Called to update the entity's position/logic.
-     */
-    public void onUpdate()
-    {
-        if (!this.worldObj.isRemote && this.worldObj.difficultySetting == 0 && this.getSlimeSize() > 0)
-        {
-            this.isDead = true;
-        }
-
-        this.squishFactor += (this.squishAmount - this.squishFactor) * 0.5F;
-        this.prevSquishFactor = this.squishFactor;
-        boolean flag = this.onGround;
-        super.onUpdate();
-        int i;
-
-        if (this.onGround && !flag)
-        {
-            i = this.getSlimeSize();
-
-            for (int j = 0; j < i * 8; ++j)
-            {
-                float f = this.rand.nextFloat() * (float)Math.PI * 2.0F;
-                float f1 = this.rand.nextFloat() * 0.5F + 0.5F;
-                float f2 = MathHelper.sin(f) * (float)i * 0.5F * f1;
-                float f3 = MathHelper.cos(f) * (float)i * 0.5F * f1;
-                this.worldObj.spawnParticle(this.getSlimeParticle(), this.posX + (double)f2, this.boundingBox.minY, this.posZ + (double)f3, 0.0D, 0.0D, 0.0D);
-            }
-
-            if (this.makesSoundOnLand())
-            {
-                this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
-            }
-
-            this.squishAmount = -0.5F;
-        }
-        else if (!this.onGround && flag)
-        {
-            this.squishAmount = 1.0F;
-        }
-
-        this.alterSquishAmount();
-
-        if (this.worldObj.isRemote)
-        {
-            i = this.getSlimeSize();
-            this.setSize(0.6F * (float)i, 0.6F * (float)i);
-        }
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(20.0D);
     }
 
     protected void updateEntityActionState()
     {
-        this.despawnEntity();
-        EntityPlayer entityplayer = this.worldObj.getClosestVulnerablePlayerToEntity(this, 16.0D);
-
-        if (entityplayer != null)
+        if (!this.worldObj.isRemote && this.worldObj.difficultySetting == 0)
         {
-            this.faceEntity(entityplayer, 10.0F, 20.0F);
+            this.setDead();
         }
 
-        if (this.onGround && this.slimeJumpDelay-- <= 0)
+        this.despawnEntity();
+        this.prevAttackCounter = this.attackCounter;
+        double d0 = this.waypointX - this.posX;
+        double d1 = this.waypointY - this.posY;
+        double d2 = this.waypointZ - this.posZ;
+        double d3 = d0 * d0 + d1 * d1 + d2 * d2;
+
+        if (d3 < 1.0D || d3 > 3600.0D)
         {
-            this.slimeJumpDelay = this.getJumpDelay();
+            this.waypointX = this.posX + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
+            this.waypointY = this.posY + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
+            this.waypointZ = this.posZ + (double)((this.rand.nextFloat() * 2.0F - 1.0F) * 16.0F);
+        }
 
-            if (entityplayer != null)
+        if (this.courseChangeCooldown-- <= 0)
+        {
+            this.courseChangeCooldown += this.rand.nextInt(5) + 2;
+            d3 = (double)MathHelper.sqrt_double(d3);
+
+            if (this.isCourseTraversable(this.waypointX, this.waypointY, this.waypointZ, d3))
             {
-                this.slimeJumpDelay /= 3;
+                this.motionX += d0 / d3 * 0.1D;
+                this.motionY += d1 / d3 * 0.1D;
+                this.motionZ += d2 / d3 * 0.1D;
             }
-
-            this.isJumping = true;
-
-            if (this.makesSoundOnJump())
+            else
             {
-                this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) * 0.8F);
+                this.waypointX = this.posX;
+                this.waypointY = this.posY;
+                this.waypointZ = this.posZ;
             }
+        }
 
-            this.moveStrafing = 1.0F - this.rand.nextFloat() * 2.0F;
-            this.moveForward = (float)(1 * this.getSlimeSize());
+        if (this.targetedEntity != null && this.targetedEntity.isDead)
+        {
+            this.targetedEntity = null;
+        }
+
+        if (this.targetedEntity == null || this.aggroCooldown-- <= 0)
+        {
+            this.targetedEntity = this.worldObj.getClosestVulnerablePlayerToEntity(this, 100.0D);
+
+            if (this.targetedEntity != null)
+            {
+                this.aggroCooldown = 20;
+            }
+        }
+
+        double d4 = 64.0D;
+
+        if (this.targetedEntity != null && this.targetedEntity.getDistanceSqToEntity(this) < d4 * d4)
+        {
+            double d5 = this.targetedEntity.posX - this.posX;
+            double d6 = this.targetedEntity.boundingBox.minY + (double)(this.targetedEntity.height / 2.0F) - (this.posY + (double)(this.height / 2.0F));
+            double d7 = this.targetedEntity.posZ - this.posZ;
+            this.renderYawOffset = this.rotationYaw = -((float)Math.atan2(d5, d7)) * 180.0F / (float)Math.PI;
+
+            if (this.canEntityBeSeen(this.targetedEntity))
+            {
+                if (this.attackCounter == 10)
+                {
+                    this.worldObj.playAuxSFXAtEntity((EntityPlayer)null, 1007, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
+                }
+
+                ++this.attackCounter;
+
+                if (this.attackCounter == 20)
+                {
+                    this.worldObj.playAuxSFXAtEntity((EntityPlayer)null, 1008, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
+                    EntityLargeFireball entitylargefireball = new EntityLargeFireball(this.worldObj, this, d5, d6, d7);
+                    entitylargefireball.field_92057_e = this.explosionStrength;
+                    double d8 = 4.0D;
+                    Vec3 vec3 = this.getLook(1.0F);
+                    entitylargefireball.posX = this.posX + vec3.xCoord * d8;
+                    entitylargefireball.posY = this.posY + (double)(this.height / 2.0F) + 0.5D;
+                    entitylargefireball.posZ = this.posZ + vec3.zCoord * d8;
+                    this.worldObj.spawnEntityInWorld(entitylargefireball);
+                    this.attackCounter = -40;
+                }
+            }
+            else if (this.attackCounter > 0)
+            {
+                --this.attackCounter;
+            }
         }
         else
         {
-            this.isJumping = false;
+            this.renderYawOffset = this.rotationYaw = -((float)Math.atan2(this.motionX, this.motionZ)) * 180.0F / (float)Math.PI;
 
-            if (this.onGround)
+            if (this.attackCounter > 0)
             {
-                this.moveStrafing = this.moveForward = 0.0F;
+                --this.attackCounter;
             }
         }
-    }
 
-    protected void alterSquishAmount()
-    {
-        this.squishAmount *= 0.6F;
-    }
-
-    /**
-     * Gets the amount of time the slime needs to wait between jumps.
-     */
-    protected int getJumpDelay()
-    {
-        return this.rand.nextInt(20) + 10;
-    }
-
-    protected MyEntityGhast createInstance()
-    {
-        return new MyEntityGhast(this.worldObj);
-    }
-
-    /**
-     * Will get destroyed next tick.
-     */
-    public void setDead()
-    {
-        int i = this.getSlimeSize();
-
-        if (!this.worldObj.isRemote && i > 1 && this.getHealth() <= 0.0F)
+        if (!this.worldObj.isRemote)
         {
-            int j = 2 + this.rand.nextInt(3);
+            byte b0 = this.dataWatcher.getWatchableObjectByte(16);
+            byte b1 = (byte)(this.attackCounter > 10 ? 1 : 0);
 
-            for (int k = 0; k < j; ++k)
+            if (b0 != b1)
             {
-                float f = ((float)(k % 2) - 0.5F) * (float)i / 4.0F;
-                float f1 = ((float)(k / 2) - 0.5F) * (float)i / 4.0F;
-                MyEntityGhast entityslime = this.createInstance();
-                entityslime.setSlimeSize(i / 2);
-                entityslime.setLocationAndAngles(this.posX + (double)f, this.posY + 0.5D, this.posZ + (double)f1, this.rand.nextFloat() * 360.0F, 0.0F);
-                this.worldObj.spawnEntityInWorld(entityslime);
+                this.dataWatcher.updateObject(16, Byte.valueOf(b1));
             }
         }
-
-        super.setDead();
     }
 
     /**
-     * Called by a player entity when they collide with an entity
+     * True if the ghast has an unobstructed line of travel to the waypoint.
      */
-    public void onCollideWithPlayer(EntityPlayer par1EntityPlayer)
+    private boolean isCourseTraversable(double par1, double par3, double par5, double par7)
     {
-        if (this.canDamagePlayer())
+        double d4 = (this.waypointX - this.posX) / par7;
+        double d5 = (this.waypointY - this.posY) / par7;
+        double d6 = (this.waypointZ - this.posZ) / par7;
+        AxisAlignedBB axisalignedbb = this.boundingBox.copy();
+
+        for (int i = 1; (double)i < par7; ++i)
         {
-            int i = this.getSlimeSize();
+            axisalignedbb.offset(d4, d5, d6);
 
-            if (this.canEntityBeSeen(par1EntityPlayer) && this.getDistanceSqToEntity(par1EntityPlayer) < 0.6D * (double)i * 0.6D * (double)i && par1EntityPlayer.attackEntityFrom(DamageSource.causeMobDamage(this), (float)this.getAttackStrength()))
+            if (!this.worldObj.getCollidingBoundingBoxes(this, axisalignedbb).isEmpty())
             {
-                this.playSound("ambient.weather.thunder", 1.0F, (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
+                return false;
             }
         }
+
+        return true;
     }
 
     /**
-     * Indicates weather the slime is able to damage the player (based upon the slime's size)
+     * Returns the sound this mob makes while it's alive.
      */
-    protected boolean canDamagePlayer()
+    protected String getLivingSound()
     {
-        return this.getSlimeSize() > 1;
-    }
-
-    /**
-     * Gets the amount of damage dealt to the player when "attacked" by the slime.
-     */
-    protected int getAttackStrength()
-    {
-        return this.getSlimeSize();
+        return "mob.ghast.moan";
     }
 
     /**
@@ -259,7 +231,7 @@ public class MyEntityGhast extends EntityLiving implements IMob
      */
     protected String getHurtSound()
     {
-        return "fireworks.largeBlast1." + (this.getSlimeSize() > 1 ? "big" : "small");
+        return "mob.ghast.scream";
     }
 
     /**
@@ -267,7 +239,7 @@ public class MyEntityGhast extends EntityLiving implements IMob
      */
     protected String getDeathSound()
     {
-        return "liquid.swim." + (this.getSlimeSize() > 1 ? "big" : "small");
+        return "mob.ghast.death";
     }
 
     /**
@@ -275,38 +247,28 @@ public class MyEntityGhast extends EntityLiving implements IMob
      */
     protected int getDropItemId()
     {
-        return this.getSlimeSize() == 1 ? Item.appleGold.itemID : 10;
+        return Block.anvil.blockID;
     }
 
     /**
-     * Checks if the entity's current position is a valid location to spawn this entity.
+     * Drop 0-2 items of this living's type. @param par1 - Whether this entity has recently been hit by a player. @param
+     * par2 - Level of Looting used to kill this mob.
      */
-    public boolean getCanSpawnHere()
+    protected void dropFewItems(boolean par1, int par2)
     {
-        Chunk chunk = this.worldObj.getChunkFromBlockCoords(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posZ));
+        int j = this.rand.nextInt(2) + this.rand.nextInt(1 + par2);
+        int k;
 
-        if (this.worldObj.getWorldInfo().getTerrainType().handleSlimeSpawnReduction(rand, worldObj))
+        for (k = 0; k < j; ++k)
         {
-            return false;
+            this.dropItem(Item.ghastTear.itemID, 1);
         }
-        else
+
+        j = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
+
+        for (k = 0; k < j; ++k)
         {
-            if (this.getSlimeSize() == 1 || this.worldObj.difficultySetting > 0)
-            {
-                BiomeGenBase biomegenbase = this.worldObj.getBiomeGenForCoords(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posZ));
-
-                if (biomegenbase == BiomeGenBase.swampland && this.posY > 50.0D && this.posY < 70.0D && this.rand.nextFloat() < 0.5F && this.rand.nextFloat() < this.worldObj.getCurrentMoonPhaseFactor() && this.worldObj.getBlockLightValue(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)) <= this.rand.nextInt(8))
-                {
-                    return super.getCanSpawnHere();
-                }
-
-                if (this.rand.nextInt(10) == 0 && chunk.getRandomWithSeed(987234911L).nextInt(10) == 0 && this.posY < 40.0D)
-                {
-                    return super.getCanSpawnHere();
-                }
-            }
-
-            return false;
+            this.dropItem(Item.emptyMap.itemID, 1);
         }
     }
 
@@ -315,31 +277,44 @@ public class MyEntityGhast extends EntityLiving implements IMob
      */
     protected float getSoundVolume()
     {
-        return 0.4F * (float)this.getSlimeSize();
+        return 10.0F;
     }
 
     /**
-     * The speed it takes to move the entityliving's rotationPitch through the faceEntity method. This is only currently
-     * use in wolves.
+     * Checks if the entity's current position is a valid location to spawn this entity.
      */
-    public int getVerticalFaceSpeed()
+    public boolean getCanSpawnHere()
     {
-        return 0;
+        return this.rand.nextInt(20) == 0 && super.getCanSpawnHere() && this.worldObj.difficultySetting > 0;
     }
 
     /**
-     * Returns true if the slime makes a sound when it jumps (based upon the slime's size)
+     * Will return how many at most can spawn in a chunk at once.
      */
-    protected boolean makesSoundOnJump()
+    public int getMaxSpawnedInChunk()
     {
-        return this.getSlimeSize() > 0;
+        return 1;
     }
 
     /**
-     * Returns true if the slime makes a sound when it lands after a jump (based upon the slime's size)
+     * (abstract) Protected helper method to write subclass entity data to NBT.
      */
-    protected boolean makesSoundOnLand()
+    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
     {
-        return this.getSlimeSize() > 2;
+        super.writeEntityToNBT(par1NBTTagCompound);
+        par1NBTTagCompound.setInteger("ExplosionPower", this.explosionStrength);
+    }
+
+    /**
+     * (abstract) Protected helper method to read subclass entity data from NBT.
+     */
+    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
+    {
+        super.readEntityFromNBT(par1NBTTagCompound);
+
+        if (par1NBTTagCompound.hasKey("ExplosionPower"))
+        {
+            this.explosionStrength = par1NBTTagCompound.getInteger("ExplosionPower");
+        }
     }
 }

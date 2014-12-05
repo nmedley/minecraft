@@ -1,4 +1,4 @@
-package mymod.entity.creeper;
+package mymod.entity.pig;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -17,14 +17,13 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.passive.EntityOcelot;
-import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
-public class MyEntityCreeper extends EntityMob
+public class MyEntityPig extends EntityMob
 {
     /**
      * Time when this creeper was last in an active state (Messed up code here, probably causes creeper animation to go
@@ -41,12 +40,12 @@ public class MyEntityCreeper extends EntityMob
     /** Explosion radius for this creeper. */
     private int explosionRadius = 3;
 
-    public MyEntityCreeper(World par1World)
+    public MyEntityPig(World par1World)
     {
         super(par1World);
         this.tasks.addTask(1, new EntityAISwimming(this));
         //this.tasks.addTask(2, new EntityAICreeperSwell(this));
-        this.tasks.addTask(3, new EntityAIAvoidEntity(this, EntityWolf.class, 6.0F, 1.0D, 1.2D));
+        this.tasks.addTask(3, new EntityAIAvoidEntity(this, EntityOcelot.class, 6.0F, 1.0D, 1.2D));
         this.tasks.addTask(4, new EntityAIAttackOnCollide(this, 1.0D, false));
         this.tasks.addTask(5, new EntityAIWander(this, 0.8D));
         this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
@@ -58,8 +57,8 @@ public class MyEntityCreeper extends EntityMob
     protected void applyEntityAttributes()
     {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(40.0D);        
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.5D);
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(20.0D);       
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.25D);
     }
 
     /**

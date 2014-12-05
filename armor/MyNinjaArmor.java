@@ -1,13 +1,16 @@
 package mymod.armor;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumArmorMaterial;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class MyNinjaArmor extends ItemArmor{
 
@@ -59,6 +62,13 @@ public class MyNinjaArmor extends ItemArmor{
     {
         return this.texturePath;
     }
+    /** Makes your Item Enchanted when it is crafted */
+        public void onCreated(ItemStack item, World world, EntityPlayer player) 
+        {
+            item.addEnchantment(Enchantment.projectileProtection, 5);
+            // Replace the "." after "Enchantment" to see options
+            // The number is the Enchantment Level
+        }
 
 }
 

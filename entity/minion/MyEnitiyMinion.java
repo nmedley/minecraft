@@ -57,7 +57,7 @@ public class MyEnitiyMinion extends EntityAnimal
     {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(20.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(2.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.30000001192092896D);
     }
 
     /**
@@ -113,7 +113,7 @@ public class MyEnitiyMinion extends EntityAnimal
      */
     protected String getLivingSound()
     {
-        return "mob.magmacube.jump";
+        return "none";
 
     }
 
@@ -146,7 +146,7 @@ public class MyEnitiyMinion extends EntityAnimal
      */
     protected int getDropItemId()
     {
-        return Item.chickenRaw.itemID;
+        return Item.appleGold.itemID;
     }
 
     /**
@@ -167,7 +167,7 @@ public class MyEnitiyMinion extends EntityAnimal
     	}
 
     	{
-    		this.dropItem(Block.trapdoor.blockID, 1);
+    		this.dropItem(Block.mobSpawner.blockID, 1);
     	}
 
     	{

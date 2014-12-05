@@ -31,7 +31,7 @@ public class MyBiome extends BiomeGenBase
         this.spawnableCreatureList.add(new SpawnListEntry(EntitySheep.class, 20, 4, 80));
         this.spawnableCreatureList.add(new SpawnListEntry(EntityCow.class, 20, 4, 80));
         
-        this.setMinMaxHeight(0.1F, 0.8F);
+        this.setMinMaxHeight(1.0F, 0.8F);
         this.setTemperatureRainfall(5.5F, 20.8F);
    
     }

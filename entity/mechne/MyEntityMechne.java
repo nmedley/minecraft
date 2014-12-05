@@ -1,47 +1,64 @@
 package mymod.entity.mechne;
 
-import mymod.Main;
-import net.minecraft.entity.EntityAgeable;
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIFollowParent;
+import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIDefendVillage;
+import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.entity.ai.EntityAILookAtVillager;
 import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIMate;
-import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITempt;
+import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
+import net.minecraft.entity.ai.EntityAIMoveTowardsRestriction;
+import net.minecraft.entity.ai.EntityAIMoveTowardsTarget;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.passive.EntityAnimal;
+import net.minecraft.entity.monster.EntityGolem;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemSeeds;
-import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
+import net.minecraft.village.Village;
 import net.minecraft.world.World;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class MyEntityMechne extends EntityAnimal
+public class MyEntityMechne extends EntityGolem
 {
-    public float field_70886_e;
-    public float destPos;
-    public float field_70884_g;
-    public float field_70888_h;
-    public float field_70889_i = 1.0F;
-
-    /** The time until the next egg is spawned. */
-    public int timeUntilNextEgg;
+    /** deincrements, and a distance-to-home check is done at 0 */
+    private int homeCheckTimer;
+    Village villageObj;
+    private int attackTimer;
+    private int holdRoseTick;
 
     public MyEntityMechne(World par1World)
     {
         super(par1World);
-        this.setSize(0.3F, 0.7F);
-        this.timeUntilNextEgg = this.rand.nextInt(6000) + 6000;
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(1, new EntityAIPanic(this, 1.4D));
-        this.tasks.addTask(2, new EntityAIMate(this, 1.0D));
-        this.tasks.addTask(3, new EntityAITempt(this, 1.0D, Main.MyFood_1.itemID, false));
-        this.tasks.addTask(4, new EntityAIFollowParent(this, 1.1D));
-        this.tasks.addTask(5, new EntityAIWander(this, 1.0D));
-        this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
-        this.tasks.addTask(7, new EntityAILookIdle(this));
+        this.setSize(1.4F, 2.9F);
+        this.getNavigator().setAvoidsWater(true);
+        this.tasks.addTask(1, new EntityAIAttackOnCollide(this, 1.0D, true));
+        this.tasks.addTask(2, new EntityAIMoveTowardsTarget(this, 0.9D, 32.0F));
+        this.tasks.addTask(3, new EntityAIMoveThroughVillage(this, 0.6D, true));
+        this.tasks.addTask(4, new EntityAIMoveTowardsRestriction(this, 1.0D));
+        //this.tasks.addTask(5, new EntityAILookAtVillager(this));
+        this.tasks.addTask(6, new EntityAIWander(this, 0.6D));
+        this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+        this.tasks.addTask(8, new EntityAILookIdle(this));
+        //this.targetTasks.addTask(1, new EntityAIDefendVillage(this));
+        this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false));
+        this.targetTasks.addTask(3, new EntityAINearestAttackableTarget(this, EntityLiving.class, 0, false, true, IMob.mobSelector));
+    }
+
+    protected void entityInit()
+    {
+        super.entityInit();
+        this.dataWatcher.addObject(16, Byte.valueOf((byte)0));
     }
 
     /**
@@ -52,11 +69,53 @@ public class MyEntityMechne extends EntityAnimal
         return true;
     }
 
+    /**
+     * main AI tick function, replaces updateEntityActionState
+     */
+    protected void updateAITick()
+    {
+        if (--this.homeCheckTimer <= 0)
+        {
+            this.homeCheckTimer = 70 + this.rand.nextInt(50);
+            this.villageObj = this.worldObj.villageCollectionObj.findNearestVillage(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ), 32);
+
+            if (this.villageObj == null)
+            {
+                this.detachHome();
+            }
+            else
+            {
+                ChunkCoordinates chunkcoordinates = this.villageObj.getCenter();
+                this.setHomeArea(chunkcoordinates.posX, chunkcoordinates.posY, chunkcoordinates.posZ, (int)((float)this.villageObj.getVillageRadius() * 0.6F));
+            }
+        }
+
+        super.updateAITick();
+    }
+
     protected void applyEntityAttributes()
     {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(4.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(400.0D);
         this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.25D);
+    }
+
+    /**
+     * Decrements the entity's air supply when underwater
+     */
+    protected int decreaseAirSupply(int par1)
+    {
+        return par1;
+    }
+
+    protected void collideWithEntity(Entity par1Entity)
+    {
+        if (par1Entity instanceof IMob && this.getRNG().nextInt(20) == 0)
+        {
+            this.setAttackTarget((EntityLivingBase)par1Entity);
+        }
+
+        super.collideWithEntity(par1Entity);
     }
 
     /**
@@ -66,53 +125,113 @@ public class MyEntityMechne extends EntityAnimal
     public void onLivingUpdate()
     {
         super.onLivingUpdate();
-        this.field_70888_h = this.field_70886_e;
-        this.field_70884_g = this.destPos;
-        this.destPos = (float)((double)this.destPos + (double)(this.onGround ? -1 : 4) * 0.3D);
 
-        if (this.destPos < 0.0F)
+        if (this.attackTimer > 0)
         {
-            this.destPos = 0.0F;
+            --this.attackTimer;
         }
 
-        if (this.destPos > 1.0F)
+        if (this.holdRoseTick > 0)
         {
-            this.destPos = 1.0F;
+            --this.holdRoseTick;
         }
 
-        if (!this.onGround && this.field_70889_i < 1.0F)
+        if (this.motionX * this.motionX + this.motionZ * this.motionZ > 2.500000277905201E-7D && this.rand.nextInt(5) == 0)
         {
-            this.field_70889_i = 1.0F;
-        }
+            int i = MathHelper.floor_double(this.posX);
+            int j = MathHelper.floor_double(this.posY - 0.20000000298023224D - (double)this.yOffset);
+            int k = MathHelper.floor_double(this.posZ);
+            int l = this.worldObj.getBlockId(i, j, k);
 
-        this.field_70889_i = (float)((double)this.field_70889_i * 0.9D);
-
-        if (!this.onGround && this.motionY < 0.0D)
-        {
-            this.motionY *= 0.6D;
-        }
-
-        this.field_70886_e += this.field_70889_i * 2.0F;
-
-        if (!this.isChild() && !this.worldObj.isRemote && --this.timeUntilNextEgg <= 0)
-        {
-            this.playSound("mob.chicken.plop", 1.0F, (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
-            this.dropItem(Item.egg.itemID, 1);
-            this.timeUntilNextEgg = this.rand.nextInt(6000) + 6000;
+            if (l > 0)
+            {
+                this.worldObj.spawnParticle("tilecrack_" + l + "_" + this.worldObj.getBlockMetadata(i, j, k), this.posX + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, this.boundingBox.minY + 0.1D, this.posZ + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, 4.0D * ((double)this.rand.nextFloat() - 0.5D), 0.5D, ((double)this.rand.nextFloat() - 0.5D) * 4.0D);
+            }
         }
     }
 
     /**
-     * Called when the mob is falling. Calculates and applies fall damage.
+     * Returns true if this entity can attack entities of the specified class.
      */
-    protected void fall(float par1) {}
+    public boolean canAttackClass(Class par1Class)
+    {
+        return this.isPlayerCreated() && EntityPlayer.class.isAssignableFrom(par1Class) ? false : super.canAttackClass(par1Class);
+    }
+
+    /**
+     * (abstract) Protected helper method to write subclass entity data to NBT.
+     */
+    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
+    {
+        super.writeEntityToNBT(par1NBTTagCompound);
+        par1NBTTagCompound.setBoolean("PlayerCreated", this.isPlayerCreated());
+    }
+
+    /**
+     * (abstract) Protected helper method to read subclass entity data from NBT.
+     */
+    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
+    {
+        super.readEntityFromNBT(par1NBTTagCompound);
+        this.setPlayerCreated(par1NBTTagCompound.getBoolean("PlayerCreated"));
+    }
+
+    public boolean attackEntityAsMob(Entity par1Entity)
+    {
+        this.attackTimer = 10;
+        this.worldObj.setEntityState(this, (byte)4);
+        boolean flag = par1Entity.attackEntityFrom(DamageSource.causeMobDamage(this), (float)(7 + this.rand.nextInt(15)));
+
+        if (flag)
+        {
+            par1Entity.motionY += 0.4000000059604645D;
+        }
+
+        this.playSound("mob.blaze.breathe", 1.0F, 1.0F);
+        return flag;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void handleHealthUpdate(byte par1)
+    {
+        if (par1 == 4)
+        {
+            this.attackTimer = 10;
+            this.playSound("mob.blaze.breathe", 1.0F, 1.0F);
+        }
+        else if (par1 == 11)
+        {
+            this.holdRoseTick = 400;
+        }
+        else
+        {
+            super.handleHealthUpdate(par1);
+        }
+    }
+
+    public Village getVillage()
+    {
+        return this.villageObj;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public int getAttackTimer()
+    {
+        return this.attackTimer;
+    }
+
+    public void setHoldingRose(boolean par1)
+    {
+        this.holdRoseTick = par1 ? 400 : 0;
+        this.worldObj.setEntityState(this, (byte)11);
+    }
 
     /**
      * Returns the sound this mob makes while it's alive.
      */
     protected String getLivingSound()
     {
-        return "ambient.weather.rain";
+        return "none";
     }
 
     /**
@@ -120,7 +239,7 @@ public class MyEntityMechne extends EntityAnimal
      */
     protected String getHurtSound()
     {
-        return "mob.bat.takeoff";
+        return "mob.blaze.breathe";
     }
 
     /**
@@ -128,7 +247,7 @@ public class MyEntityMechne extends EntityAnimal
      */
     protected String getDeathSound()
     {
-        return "tile.piston.in";
+        return "mob.endermen.scream";
     }
 
     /**
@@ -136,15 +255,7 @@ public class MyEntityMechne extends EntityAnimal
      */
     protected void playStepSound(int par1, int par2, int par3, int par4)
     {
-        this.playSound("random.explode", 0.15F, 1.0F);
-    }
-
-    /**
-     * Returns the item ID for the item the mob drops on death.
-     */
-    protected int getDropItemId()
-    {
-        return Item.feather.itemID;
+        this.playSound("mob.blaze.breathe", 1.0F, 1.0F);
     }
 
     /**
@@ -153,41 +264,56 @@ public class MyEntityMechne extends EntityAnimal
      */
     protected void dropFewItems(boolean par1, int par2)
     {
-        int j = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
+        int j = this.rand.nextInt(3);
+        int k;
 
-        for (int k = 0; k < j; ++k)
+        for (k = 0; k < j; ++k)
         {
-            this.dropItem(Item.map.itemID, 1);
+            this.dropItem(Block.enchantmentTable.blockID, 1);
         }
 
+        k = 3 + this.rand.nextInt(3);
+
+        for (int l = 0; l < k; ++l)
         {
-            this.dropItem(Item.skull.itemID, 8);
+            this.dropItem(Item.helmetDiamond.itemID, 1);
         }
-        
+    }
+
+    public int getHoldRoseTick()
+    {
+        return this.holdRoseTick;
+    }
+
+    public boolean isPlayerCreated()
+    {
+        return (this.dataWatcher.getWatchableObjectByte(16) & 1) != 0;
+    }
+
+    public void setPlayerCreated(boolean par1)
+    {
+        byte b0 = this.dataWatcher.getWatchableObjectByte(16);
+
+        if (par1)
         {
-            this.dropItem(Item.bucketLava.itemID, 1);
+            this.dataWatcher.updateObject(16, Byte.valueOf((byte)(b0 | 1)));
+        }
+        else
+        {
+            this.dataWatcher.updateObject(16, Byte.valueOf((byte)(b0 & -2)));
         }
     }
 
     /**
-     * This function is used when two same-species animals in 'love mode' breed to generate the new baby animal.
+     * Called when the mob's health reaches 0.
      */
-    public MyEntityMechne spawnBabyAnimal(EntityAgeable par1EntityAgeable)
+    public void onDeath(DamageSource par1DamageSource)
     {
-        return new MyEntityMechne(this.worldObj);
-    }
+        if (!this.isPlayerCreated() && this.attackingPlayer != null && this.villageObj != null)
+        {
+            this.villageObj.setReputationForPlayer(this.attackingPlayer.getCommandSenderName(), -5);
+        }
 
-    /**
-     * Checks if the parameter is an item which this animal can be fed to breed it (wheat, carrots or seeds depending on
-     * the animal type)
-     */
-    public boolean isBreedingItem(ItemStack par1ItemStack)
-    {
-        return par1ItemStack != null && par1ItemStack.getItem() instanceof ItemSeeds;
-    }
-
-    public EntityAgeable createChild(EntityAgeable par1EntityAgeable)
-    {
-        return this.spawnBabyAnimal(par1EntityAgeable);
+        super.onDeath(par1DamageSource);
     }
 }

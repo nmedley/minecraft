@@ -84,7 +84,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
      */
     protected String getLivingSound()
     {
-        return "mob.ghast.moan";
+        return "mob.zombie.say";
     }
 
     /**
@@ -92,7 +92,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
      */
     protected String getHurtSound()
     {
-        return "mob.zombie.woodbreak";
+        return "mob.zombie.hurt";
     }
 
     /**
@@ -100,7 +100,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
      */
     protected String getDeathSound()
     {
-        return "mob.magmacube.jump";
+        return "mob.zombie.death";
     }
 
     /**
@@ -108,7 +108,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
      */
     protected void playStepSound(int par1, int par2, int par3, int par4)
     {
-        this.playSound("mob.wither.spawn", 0.15F, 1.0F);
+        this.playSound("mob.zombie.step", 0.15F, 1.0F);
     }
 
     public boolean attackEntityAsMob(Entity par1Entity)
@@ -239,7 +239,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.melonSeeds.itemID, 4);
+                this.dropItem(Item.appleGold.itemID, 4);
             }
         }
         else
@@ -248,7 +248,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.minecartCrate.itemID, 2);
+                this.dropItem(Item.firework.itemID, 2);
             }
         }
 
@@ -256,7 +256,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
 
         for (k = 0; k < j; ++k)
         {
-            this.dropItem(Item.minecartEmpty.itemID, 2);
+            this.dropItem(Item.rottenFlesh.itemID, 2);
         }
     }
 
@@ -264,7 +264,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
     {
         if (this.getSkeletonType() == 1)
         {
-            this.entityDropItem(new ItemStack(Item.compass.itemID, 1, 1), 0.0F);
+            this.entityDropItem(new ItemStack(Block.blockEmerald.blockID, 1, 1), 0.0F);
         }
     }
 
