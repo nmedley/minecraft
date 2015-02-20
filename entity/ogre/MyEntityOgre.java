@@ -1,65 +1,46 @@
 package mymod.entity.ogre;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
 import net.minecraft.block.Block;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IRangedAttackMob;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIArrowAttack;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWander;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.ai.attributes.AttributeInstance;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityPotion;
+import net.minecraft.entity.projectile.EntitySmallFireball;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class MyEntityOgre extends EntityMob implements IRangedAttackMob
+public class MyEntityOgre extends EntityMob
 {
-    private static final UUID field_110184_bp = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
-    private static final AttributeModifier field_110185_bq = (new AttributeModifier(field_110184_bp, "Drinking speed penalty", -0.25D, 0)).setSaved(false);
+    /** Random offset used in floating behaviour */
+    private float heightOffset = 0.5F;
 
-    /** List of items a witch should drop on death. */
-    private static final int[] witchDrops = new int[] {Block.glowStone.blockID, Item.beefCooked.itemID, Item.swordDiamond.itemID, Item.axeDiamond.itemID, Item.arrow.itemID, Item.bow.itemID, Item.ingotIron.itemID, Block.bed.blockID};
-
-    /**
-     * Timer used as interval for a witch's attack, decremented every tick if aggressive and when reaches zero the witch
-     * will throw a potion at the target entity.
-     */
-    private int witchAttackTimer;
+    /** ticks until heightOffset is randomized */
+    private int heightOffsetUpdateTime;
+    private int field_70846_g;
 
     public MyEntityOgre(World par1World)
     {
         super(par1World);
-        this.tasks.addTask(1, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIArrowAttack(this, 1.0D, 60, 10.0F));
-        this.tasks.addTask(2, new EntityAIWander(this, 1.0D));
-        this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-        this.tasks.addTask(3, new EntityAILookIdle(this));
-        this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, false));
-        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget(this, EntityPlayer.class, 0, true));
+        this.isImmuneToFire = true;
+        this.experienceValue = 10;
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.30000001192092896D);
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(800.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setAttribute(10.0D);             
     }
 
     protected void entityInit()
     {
         super.entityInit();
-        this.getDataWatcher().addObject(21, Byte.valueOf((byte)0));
+        this.dataWatcher.addObject(16, new Byte((byte)0));
     }
 
     /**
@@ -67,7 +48,7 @@ public class MyEntityOgre extends EntityMob implements IRangedAttackMob
      */
     protected String getLivingSound()
     {
-        return "mob.witch.idle";
+        return "mob.blaze.breathe";
     }
 
     /**
@@ -75,7 +56,7 @@ public class MyEntityOgre extends EntityMob implements IRangedAttackMob
      */
     protected String getHurtSound()
     {
-        return "mob.witch.hurt";
+        return "mob.blaze.hit";
     }
 
     /**
@@ -83,38 +64,21 @@ public class MyEntityOgre extends EntityMob implements IRangedAttackMob
      */
     protected String getDeathSound()
     {
-        return "mob.witch.death";
+        return "mob.blaze.death";
+    }
+
+    @SideOnly(Side.CLIENT)
+    public int getBrightnessForRender(float par1)
+    {
+        return 15728880;
     }
 
     /**
-     * Set whether this witch is aggressive at an entity.
+     * Gets how bright this entity is.
      */
-    public void setAggressive(boolean par1)
+    public float getBrightness(float par1)
     {
-        this.getDataWatcher().updateObject(21, Byte.valueOf((byte)(par1 ? 1 : 0)));
-    }
-
-    /**
-     * Return whether this witch is aggressive at an entity.
-     */
-    public boolean getAggressive()
-    {
-        return this.getDataWatcher().getWatchableObjectByte(21) == 1;
-    }
-
-    protected void applyEntityAttributes()
-    {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(26.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.25D);
-    }
-
-    /**
-     * Returns true if the newer Entity AI code should be run
-     */
-    public boolean isAIEnabled()
-    {
-        return true;
+        return 1.0F;
     }
 
     /**
@@ -125,108 +89,117 @@ public class MyEntityOgre extends EntityMob implements IRangedAttackMob
     {
         if (!this.worldObj.isRemote)
         {
-            if (this.getAggressive())
+            if (this.isWet())
             {
-                if (this.witchAttackTimer-- <= 0)
-                {
-                    this.setAggressive(false);
-                    ItemStack itemstack = this.getHeldItem();
-                    this.setCurrentItemOrArmor(0, (ItemStack)null);
-
-                    if (itemstack != null && itemstack.itemID == Item.potion.itemID)
-                    {
-                        List list = Item.potion.getEffects(itemstack);
-
-                        if (list != null)
-                        {
-                            Iterator iterator = list.iterator();
-
-                            while (iterator.hasNext())
-                            {
-                                PotionEffect potioneffect = (PotionEffect)iterator.next();
-                                this.addPotionEffect(new PotionEffect(potioneffect));
-                            }
-                        }
-                    }
-
-                    this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).removeModifier(field_110185_bq);
-                }
-            }
-            else
-            {
-                short short1 = -1;
-
-                if (this.rand.nextFloat() < 0.15F && this.isBurning() && !this.isPotionActive(Potion.fireResistance))
-                {
-                    short1 = 16307;
-                }
-                else if (this.rand.nextFloat() < 0.05F && this.getHealth() < this.getMaxHealth())
-                {
-                    short1 = 16341;
-                }
-                else if (this.rand.nextFloat() < 0.25F && this.getAttackTarget() != null && !this.isPotionActive(Potion.moveSpeed) && this.getAttackTarget().getDistanceSqToEntity(this) > 121.0D)
-                {
-                    short1 = 16274;
-                }
-                else if (this.rand.nextFloat() < 0.25F && this.getAttackTarget() != null && !this.isPotionActive(Potion.moveSpeed) && this.getAttackTarget().getDistanceSqToEntity(this) > 121.0D)
-                {
-                    short1 = 16274;
-                }
-
-                if (short1 > -1)
-                {
-                    this.setCurrentItemOrArmor(0, new ItemStack(Item.potion, 1, short1));
-                    this.witchAttackTimer = this.getHeldItem().getMaxItemUseDuration();
-                    this.setAggressive(true);
-                    AttributeInstance attributeinstance = this.getEntityAttribute(SharedMonsterAttributes.movementSpeed);
-                    attributeinstance.removeModifier(field_110185_bq);
-                    attributeinstance.applyModifier(field_110185_bq);
-                }
+                this.attackEntityFrom(DamageSource.drown, 1.0F);
             }
 
-            if (this.rand.nextFloat() < 7.5E-4F)
+            --this.heightOffsetUpdateTime;
+
+            if (this.heightOffsetUpdateTime <= 0)
             {
-                this.worldObj.setEntityState(this, (byte)15);
+                this.heightOffsetUpdateTime = 100;
+                this.heightOffset = 0.5F + (float)this.rand.nextGaussian() * 3.0F;
             }
+
+            if (this.getEntityToAttack() != null && this.getEntityToAttack().posY + (double)this.getEntityToAttack().getEyeHeight() > this.posY + (double)this.getEyeHeight() + (double)this.heightOffset)
+            {
+                this.motionY += (0.30000001192092896D - this.motionY) * 0.30000001192092896D;
+            }
+        }
+
+        if (this.rand.nextInt(24) == 0)
+        {
+            this.worldObj.playSoundEffect(this.posX + 0.5D, this.posY + 0.5D, this.posZ + 0.5D, "fire.fire", 1.0F + this.rand.nextFloat(), this.rand.nextFloat() * 0.7F + 0.3F);
+        }
+
+        if (!this.onGround && this.motionY < 0.0D)
+        {
+            this.motionY *= 0.6D;
+        }
+
+        for (int i = 0; i < 2; ++i)
+        {
+            this.worldObj.spawnParticle("largesmoke", this.posX + (this.rand.nextDouble() - 0.5D) * (double)this.width, this.posY + this.rand.nextDouble() * (double)this.height, this.posZ + (this.rand.nextDouble() - 0.5D) * (double)this.width, 0.0D, 0.0D, 0.0D);
         }
 
         super.onLivingUpdate();
     }
 
     /**
-     * Reduces damage, depending on potions
+     * Basic mob attack. Default to touch of death in EntityCreature. Overridden by each mob to define their attack.
      */
-    protected float applyPotionDamageCalculations(DamageSource par1DamageSource, float par2)
+    protected void attackEntity(Entity par1Entity, float par2)
     {
-        par2 = super.applyPotionDamageCalculations(par1DamageSource, par2);
-
-        if (par1DamageSource.getEntity() == this)
+        if (this.attackTime <= 0 && par2 < 2.0F && par1Entity.boundingBox.maxY > this.boundingBox.minY && par1Entity.boundingBox.minY < this.boundingBox.maxY)
         {
-            par2 = 0.0F;
+            this.attackTime = 20;
+            this.attackEntityAsMob(par1Entity);
         }
-
-        if (par1DamageSource.isMagicDamage())
+        else if (par2 < 30.0F)
         {
-            par2 = (float)((double)par2 * 0.15D);
-        }
+            double d0 = par1Entity.posX - this.posX;
+            double d1 = par1Entity.boundingBox.minY + (double)(par1Entity.height / 2.0F) - (this.posY + (double)(this.height / 2.0F));
+            double d2 = par1Entity.posZ - this.posZ;
 
-        return par2;
+            if (this.attackTime == 0)
+            {
+                ++this.field_70846_g;
+
+                if (this.field_70846_g == 1)
+                {
+                    this.attackTime = 60;
+                    this.func_70844_e(true);
+                }
+                else if (this.field_70846_g <= 4)
+                {
+                    this.attackTime = 6;
+                }
+                else
+                {
+                    this.attackTime = 100;
+                    this.field_70846_g = 0;
+                    this.func_70844_e(false);
+                }
+
+                if (this.field_70846_g > 1)
+                {
+                    float f1 = MathHelper.sqrt_float(par2) * 0.5F;
+                    this.worldObj.playAuxSFXAtEntity((EntityPlayer)null, 1009, (int)this.posX, (int)this.posY, (int)this.posZ, 0);
+
+                    for (int i = 0; i < 1; ++i)
+                    {
+                        EntitySmallFireball entitysmallfireball = new EntitySmallFireball(this.worldObj, this, d0 + this.rand.nextGaussian() * (double)f1, d1, d2 + this.rand.nextGaussian() * (double)f1);
+                        entitysmallfireball.posY = this.posY + (double)(this.height / 2.0F) + 0.5D;
+                        this.worldObj.spawnEntityInWorld(entitysmallfireball);
+                    }
+                }
+            }
+
+            this.rotationYaw = (float)(Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
+            this.hasAttacked = true;
+        }
     }
 
-    @SideOnly(Side.CLIENT)
-    public void handleHealthUpdate(byte par1)
+    /**
+     * Called when the mob is falling. Calculates and applies fall damage.
+     */
+    protected void fall(float par1) {}
+
+    /**
+     * Returns the item ID for the item the mob drops on death.
+     */
+    protected int getDropItemId()
     {
-        if (par1 == 15)
-        {
-            for (int i = 0; i < this.rand.nextInt(35) + 10; ++i)
-            {
-                this.worldObj.spawnParticle("witchMagic", this.posX + this.rand.nextGaussian() * 0.12999999523162842D, this.boundingBox.maxY + 0.5D + this.rand.nextGaussian() * 0.12999999523162842D, this.posZ + this.rand.nextGaussian() * 0.12999999523162842D, 0.0D, 0.0D, 0.0D);
-            }
-        }
-        else
-        {
-            super.handleHealthUpdate(par1);
-        }
+        return Block.anvil.blockID;
+    }
+
+    /**
+     * Returns true if the entity is on fire. Used by render to add the fire effect on rendering.
+     */
+    public boolean isBurning()
+    {
+        return this.func_70845_n();
     }
 
     /**
@@ -235,54 +208,43 @@ public class MyEntityOgre extends EntityMob implements IRangedAttackMob
      */
     protected void dropFewItems(boolean par1, int par2)
     {
-        int j = this.rand.nextInt(3) + 1;
-
-        for (int k = 0; k < j; ++k)
+        if (par1)
         {
-            int l = this.rand.nextInt(3);
-            int i1 = witchDrops[this.rand.nextInt(witchDrops.length)];
+            int j = this.rand.nextInt(2 + par2);
 
-            if (par2 > 0)
+            for (int k = 0; k < j; ++k)
             {
-                l += this.rand.nextInt(par2 + 1);
-            }
-
-            for (int j1 = 0; j1 < l; ++j1)
-            {
-                this.dropItem(i1, 1);
+                this.dropItem(Block.dragonEgg.blockID, 1);
             }
         }
     }
 
-    /**
-     * Attack the specified entity using a ranged attack.
-     */
-    public void attackEntityWithRangedAttack(EntityLivingBase par1EntityLivingBase, float par2)
+    public boolean func_70845_n()
     {
-        if (!this.getAggressive())
+        return (this.dataWatcher.getWatchableObjectByte(16) & 1) != 0;
+    }
+
+    public void func_70844_e(boolean par1)
+    {
+        byte b0 = this.dataWatcher.getWatchableObjectByte(16);
+
+        if (par1)
         {
-            EntityPotion entitypotion = new EntityPotion(this.worldObj, this, 32732);
-            entitypotion.rotationPitch -= -20.0F;
-            double d0 = par1EntityLivingBase.posX + par1EntityLivingBase.motionX - this.posX;
-            double d1 = par1EntityLivingBase.posY + (double)par1EntityLivingBase.getEyeHeight() - 1.100000023841858D - this.posY;
-            double d2 = par1EntityLivingBase.posZ + par1EntityLivingBase.motionZ - this.posZ;
-            float f1 = MathHelper.sqrt_double(d0 * d0 + d2 * d2);
-
-            if (f1 >= 8.0F && !par1EntityLivingBase.isPotionActive(Potion.moveSlowdown))
-            {
-                entitypotion.setPotionDamage(32698);
-            }
-            else if (par1EntityLivingBase.getHealth() >= 8.0F && !par1EntityLivingBase.isPotionActive(Potion.poison))
-            {
-                entitypotion.setPotionDamage(32660);
-            }
-            else if (f1 <= 3.0F && !par1EntityLivingBase.isPotionActive(Potion.weakness) && this.rand.nextFloat() < 0.25F)
-            {
-                entitypotion.setPotionDamage(32696);
-            }
-
-            entitypotion.setThrowableHeading(d0, d1 + (double)(f1 * 0.2F), d2, 0.75F, 8.0F);
-            this.worldObj.spawnEntityInWorld(entitypotion);
+            b0 = (byte)(b0 | 1);
         }
+        else
+        {
+            b0 &= -2;
+        }
+
+        this.dataWatcher.updateObject(16, Byte.valueOf(b0));
+    }
+
+    /**
+     * Checks to make sure the light is not too bright where the mob is spawning
+     */
+    protected boolean isValidLightLevel()
+    {
+        return true;
     }
 }

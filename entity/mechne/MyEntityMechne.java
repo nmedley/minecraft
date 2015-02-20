@@ -1,5 +1,6 @@
 package mymod.entity.mechne;
 
+import mymod.Main;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -269,14 +270,14 @@ public class MyEntityMechne extends EntityGolem
 
         for (k = 0; k < j; ++k)
         {
-            this.dropItem(Block.enchantmentTable.blockID, 1);
+            this.dropItem(Main.MyItem_1.itemID, 1);
         }
 
         k = 3 + this.rand.nextInt(3);
 
         for (int l = 0; l < k; ++l)
         {
-            this.dropItem(Item.helmetDiamond.itemID, 1);
+            this.dropItem(Item.appleGold.itemID, 1);
         }
     }
 

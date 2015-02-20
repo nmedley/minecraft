@@ -2,6 +2,7 @@ package mymod.entity.wraith;
 
 import java.util.Calendar;
 
+import mymod.Main;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -84,7 +85,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
      */
     protected String getLivingSound()
     {
-        return "mob.ghast.moan";
+        return "mob.skeleton.say";
     }
 
     /**
@@ -92,7 +93,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
      */
     protected String getHurtSound()
     {
-        return "mob.wither.spawn";
+        return "mob.skeleton.hurt";
     }
 
     /**
@@ -100,7 +101,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
      */
     protected String getDeathSound()
     {
-        return "mob.ghast.charge";
+        return "mob.skeleton.death";
     }
 
     /**
@@ -108,7 +109,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
      */
     protected void playStepSound(int par1, int par2, int par3, int par4)
     {
-        this.playSound("none", 0.15F, 1.0F);
+        this.playSound("mob.skeleton.step", 0.15F, 1.0F);
     }
 
     public boolean attackEntityAsMob(Entity par1Entity)
@@ -239,7 +240,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.minecartPowered.itemID, 2);
+                this.dropItem(Item.coal.itemID, 1);
             }
         }
         else
@@ -248,7 +249,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.leash.itemID, 1);
+                this.dropItem(Item.arrow.itemID, 1);
             }
         }
 
@@ -256,7 +257,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
 
         for (k = 0; k < j; ++k)
         {
-            this.dropItem(Item.cauldron.itemID, 1);
+            this.dropItem(Main.MyItem_1.itemID, 1);
         }
     }
 
@@ -264,7 +265,7 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
     {
         if (this.getSkeletonType() == 1)
         {
-            this.entityDropItem(new ItemStack(Item.legsDiamond.itemID, 4, 4), 0.0F);
+            this.entityDropItem(new ItemStack(Item.skull.itemID, 1, 1), 0.0F);
         }
     }
 
@@ -285,8 +286,8 @@ public class MyEntityWraith extends EntityMob implements IRangedAttackMob
         {
             this.tasks.addTask(4, this.aiAttackOnCollide);
             this.setSkeletonType(1);
-            this.setCurrentItemOrArmor(0, new ItemStack(Item.swordDiamond));
-            this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setAttribute(6.0D);
+            this.setCurrentItemOrArmor(0, new ItemStack(Item.swordStone));
+            this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setAttribute(4.0D);
         }
         else
         {

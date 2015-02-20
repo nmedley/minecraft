@@ -1,91 +1,31 @@
 package mymod.entity.abe;
 
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingData;
+import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.SpiderEffectsGroupData;
+import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.chunk.Chunk;
 
-public class MyEntityAbe extends EntityLiving implements IMob
+public class MyEntityAbe extends EntityMob
 {
-    public float squishAmount;
-    public float squishFactor;
-    public float prevSquishFactor;
-
-    /** the time between each jump of the slime */
-    private int slimeJumpDelay;
-
     public MyEntityAbe(World par1World)
     {
         super(par1World);
-        int i = 1 << this.rand.nextInt(3);
-        this.yOffset = 0.0F;
-        this.slimeJumpDelay = this.rand.nextInt(20) + 10;
-        this.setSlimeSize(i);
+        this.setSize(1.4F, 0.9F);
     }
 
     protected void entityInit()
     {
         super.entityInit();
-        this.dataWatcher.addObject(16, new Byte((byte)1));
-    }
-
-    protected void setSlimeSize(int par1)
-    {
-        this.dataWatcher.updateObject(16, new Byte((byte)par1));
-        this.setSize(0.6F * (float)par1, 0.6F * (float)par1);
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute((double)(par1 * par1));
-        this.setHealth(this.getMaxHealth());
-        this.experienceValue = par1;
-    }
-
-    /**
-     * Returns the size of the slime.
-     */
-    public int getSlimeSize()
-    {
-        return this.dataWatcher.getWatchableObjectByte(16);
-    }
-
-    /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
-     */
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
-    {
-        super.writeEntityToNBT(par1NBTTagCompound);
-        par1NBTTagCompound.setInteger("Size", this.getSlimeSize() - 1);
-    }
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
-    {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.setSlimeSize(par1NBTTagCompound.getInteger("Size") + 1);
-    }
-
-    /**
-     * Returns the name of a particle effect that may be randomly created by EntitySlime.onUpdate()
-     */
-    protected String getSlimeParticle()
-    {
-        return "slime";
-    }
-
-    /**
-     * Returns the name of the sound played when the slime jumps.
-     */
-    protected String getJumpSound()
-    {
-        return "mob.slime." + (this.getSlimeSize() > 1 ? "big" : "small");
+        this.dataWatcher.addObject(16, new Byte((byte)0));
     }
 
     /**
@@ -93,164 +33,46 @@ public class MyEntityAbe extends EntityLiving implements IMob
      */
     public void onUpdate()
     {
-        if (!this.worldObj.isRemote && this.worldObj.difficultySetting == 0 && this.getSlimeSize() > 0)
-        {
-            this.isDead = true;
-        }
-
-        this.squishFactor += (this.squishAmount - this.squishFactor) * 0.5F;
-        this.prevSquishFactor = this.squishFactor;
-        boolean flag = this.onGround;
         super.onUpdate();
-        int i;
 
-        if (this.onGround && !flag)
+        if (!this.worldObj.isRemote)
         {
-            i = this.getSlimeSize();
-
-            for (int j = 0; j < i * 8; ++j)
-            {
-                float f = this.rand.nextFloat() * (float)Math.PI * 2.0F;
-                float f1 = this.rand.nextFloat() * 0.5F + 0.5F;
-                float f2 = MathHelper.sin(f) * (float)i * 0.5F * f1;
-                float f3 = MathHelper.cos(f) * (float)i * 0.5F * f1;
-                this.worldObj.spawnParticle(this.getSlimeParticle(), this.posX + (double)f2, this.boundingBox.minY, this.posZ + (double)f3, 0.0D, 0.0D, 0.0D);
-            }
-
-            if (this.makesSoundOnLand())
-            {
-                this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) / 0.8F);
-            }
-
-            this.squishAmount = -0.5F;
-        }
-        else if (!this.onGround && flag)
-        {
-            this.squishAmount = 1.0F;
-        }
-
-        this.alterSquishAmount();
-
-        if (this.worldObj.isRemote)
-        {
-            i = this.getSlimeSize();
-            this.setSize(0.6F * (float)i, 0.6F * (float)i);
+            this.setBesideClimbableBlock(this.isCollidedHorizontally);
         }
     }
 
-    protected void updateEntityActionState()
+    protected void applyEntityAttributes()
     {
-        this.despawnEntity();
-        EntityPlayer entityplayer = this.worldObj.getClosestVulnerablePlayerToEntity(this, 16.0D);
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(16.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.800000011920929D);
+    }
 
-        if (entityplayer != null)
+    /**
+     * Finds the closest player within 16 blocks to attack, or null if this Entity isn't interested in attacking
+     * (Animals, Spiders at day, peaceful PigZombies).
+     */
+    protected Entity findPlayerToAttack()
+    {
+        float f = this.getBrightness(1.0F);
+
+        if (f < 0.5F)
         {
-            this.faceEntity(entityplayer, 10.0F, 20.0F);
-        }
-
-        if (this.onGround && this.slimeJumpDelay-- <= 0)
-        {
-            this.slimeJumpDelay = this.getJumpDelay();
-
-            if (entityplayer != null)
-            {
-                this.slimeJumpDelay /= 3;
-            }
-
-            this.isJumping = true;
-
-            if (this.makesSoundOnJump())
-            {
-                this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F) * 0.8F);
-            }
-
-            this.moveStrafing = 1.0F - this.rand.nextFloat() * 2.0F;
-            this.moveForward = (float)(1 * this.getSlimeSize());
+            double d0 = 16.0D;
+            return this.worldObj.getClosestVulnerablePlayerToEntity(this, d0);
         }
         else
         {
-            this.isJumping = false;
-
-            if (this.onGround)
-            {
-                this.moveStrafing = this.moveForward = 0.0F;
-            }
-        }
-    }
-
-    protected void alterSquishAmount()
-    {
-        this.squishAmount *= 0.6F;
-    }
-
-    /**
-     * Gets the amount of time the slime needs to wait between jumps.
-     */
-    protected int getJumpDelay()
-    {
-        return this.rand.nextInt(20) + 10;
-    }
-
-    protected MyEntityAbe createInstance()
-    {
-        return new MyEntityAbe(this.worldObj);
-    }
-
-    /**
-     * Will get destroyed next tick.
-     */
-    public void setDead()
-    {
-        int i = this.getSlimeSize();
-
-        if (!this.worldObj.isRemote && i > 1 && this.getHealth() <= 0.0F)
-        {
-            int j = 2 + this.rand.nextInt(3);
-
-            for (int k = 0; k < j; ++k)
-            {
-                float f = ((float)(k % 2) - 0.5F) * (float)i / 4.0F;
-                float f1 = ((float)(k / 2) - 0.5F) * (float)i / 4.0F;
-                MyEntityAbe entityslime = this.createInstance();
-                entityslime.setSlimeSize(i / 2);
-                entityslime.setLocationAndAngles(this.posX + (double)f, this.posY + 0.5D, this.posZ + (double)f1, this.rand.nextFloat() * 360.0F, 0.0F);
-                this.worldObj.spawnEntityInWorld(entityslime);
-            }
-        }
-
-        super.setDead();
-    }
-
-    /**
-     * Called by a player entity when they collide with an entity
-     */
-    public void onCollideWithPlayer(EntityPlayer par1EntityPlayer)
-    {
-        if (this.canDamagePlayer())
-        {
-            int i = this.getSlimeSize();
-
-            if (this.canEntityBeSeen(par1EntityPlayer) && this.getDistanceSqToEntity(par1EntityPlayer) < 0.6D * (double)i * 0.6D * (double)i && par1EntityPlayer.attackEntityFrom(DamageSource.causeMobDamage(this), (float)this.getAttackStrength()))
-            {
-                this.playSound("mob.attack", 1.0F, (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
-            }
+            return null;
         }
     }
 
     /**
-     * Indicates weather the slime is able to damage the player (based upon the slime's size)
+     * Returns the sound this mob makes while it's alive.
      */
-    protected boolean canDamagePlayer()
+    protected String getLivingSound()
     {
-        return this.getSlimeSize() > 1;
-    }
-
-    /**
-     * Gets the amount of damage dealt to the player when "attacked" by the slime.
-     */
-    protected int getAttackStrength()
-    {
-        return this.getSlimeSize();
+        return "mob.spider.say";
     }
 
     /**
@@ -258,7 +80,7 @@ public class MyEntityAbe extends EntityLiving implements IMob
      */
     protected String getHurtSound()
     {
-        return "mob.slime." + (this.getSlimeSize() > 1 ? "big" : "small");
+        return "mob.spider.say";
     }
 
     /**
@@ -266,7 +88,47 @@ public class MyEntityAbe extends EntityLiving implements IMob
      */
     protected String getDeathSound()
     {
-        return "mob.slime." + (this.getSlimeSize() > 1 ? "big" : "small");
+        return "mob.spider.death";
+    }
+
+    /**
+     * Plays step sound at given x, y, z for the entity
+     */
+    protected void playStepSound(int par1, int par2, int par3, int par4)
+    {
+        this.playSound("mob.spider.step", 0.15F, 1.0F);
+    }
+
+    /**
+     * Basic mob attack. Default to touch of death in EntityCreature. Overridden by each mob to define their attack.
+     */
+    protected void attackEntity(Entity par1Entity, float par2)
+    {
+        float f1 = this.getBrightness(1.0F);
+
+        if (f1 > 0.5F && this.rand.nextInt(100) == 0)
+        {
+            this.entityToAttack = null;
+        }
+        else
+        {
+            if (par2 > 2.0F && par2 < 6.0F && this.rand.nextInt(10) == 0)
+            {
+                if (this.onGround)
+                {
+                    double d0 = par1Entity.posX - this.posX;
+                    double d1 = par1Entity.posZ - this.posZ;
+                    float f2 = MathHelper.sqrt_double(d0 * d0 + d1 * d1);
+                    this.motionX = d0 / (double)f2 * 0.5D * 0.800000011920929D + this.motionX * 0.20000000298023224D;
+                    this.motionZ = d1 / (double)f2 * 0.5D * 0.800000011920929D + this.motionZ * 0.20000000298023224D;
+                    this.motionY = 0.4000000059604645D;
+                }
+            }
+            else
+            {
+                super.attackEntity(par1Entity, par2);
+            }
+        }
     }
 
     /**
@@ -274,71 +136,111 @@ public class MyEntityAbe extends EntityLiving implements IMob
      */
     protected int getDropItemId()
     {
-        return this.getSlimeSize() == 1 ? Item.slimeBall.itemID : 0;
+        return Block.fire.blockID;
     }
 
     /**
-     * Checks if the entity's current position is a valid location to spawn this entity.
+     * Drop 0-2 items of this living's type. @param par1 - Whether this entity has recently been hit by a player. @param
+     * par2 - Level of Looting used to kill this mob.
      */
-    public boolean getCanSpawnHere()
+    protected void dropFewItems(boolean par1, int par2)
     {
-        Chunk chunk = this.worldObj.getChunkFromBlockCoords(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posZ));
+        super.dropFewItems(par1, par2);
 
-        if (this.worldObj.getWorldInfo().getTerrainType().handleSlimeSpawnReduction(rand, worldObj))
+        if (par1 && (this.rand.nextInt(3) == 0 || this.rand.nextInt(1 + par2) > 0))
         {
-            return false;
+            this.dropItem(Item.spiderEye.itemID, 1);
+        }
+    }
+
+    /**
+     * returns true if this entity is by a ladder, false otherwise
+     */
+    public boolean isOnLadder()
+    {
+        return this.isBesideClimbableBlock();
+    }
+
+    /**
+     * Sets the Entity inside a web block.
+     */
+    public void setInWeb() {}
+
+    /**
+     * Get this Entity's EnumCreatureAttribute
+     */
+    public EnumCreatureAttribute getCreatureAttribute()
+    {
+        return EnumCreatureAttribute.ARTHROPOD;
+    }
+
+    public boolean isPotionApplicable(PotionEffect par1PotionEffect)
+    {
+        return par1PotionEffect.getPotionID() == Potion.poison.id ? false : super.isPotionApplicable(par1PotionEffect);
+    }
+
+    /**
+     * Returns true if the WatchableObject (Byte) is 0x01 otherwise returns false. The WatchableObject is updated using
+     * setBesideClimableBlock.
+     */
+    public boolean isBesideClimbableBlock()
+    {
+        return (this.dataWatcher.getWatchableObjectByte(16) & 1) != 0;
+    }
+
+    /**
+     * Updates the WatchableObject (Byte) created in entityInit(), setting it to 0x01 if par1 is true or 0x00 if it is
+     * false.
+     */
+    public void setBesideClimbableBlock(boolean par1)
+    {
+        byte b0 = this.dataWatcher.getWatchableObjectByte(16);
+
+        if (par1)
+        {
+            b0 = (byte)(b0 | 1);
         }
         else
         {
-            if (this.getSlimeSize() == 1 || this.worldObj.difficultySetting > 0)
-            {
-                BiomeGenBase biomegenbase = this.worldObj.getBiomeGenForCoords(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posZ));
-
-                if (biomegenbase == BiomeGenBase.swampland && this.posY > 50.0D && this.posY < 70.0D && this.rand.nextFloat() < 0.5F && this.rand.nextFloat() < this.worldObj.getCurrentMoonPhaseFactor() && this.worldObj.getBlockLightValue(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)) <= this.rand.nextInt(8))
-                {
-                    return super.getCanSpawnHere();
-                }
-
-                if (this.rand.nextInt(10) == 0 && chunk.getRandomWithSeed(987234911L).nextInt(10) == 0 && this.posY < 40.0D)
-                {
-                    return super.getCanSpawnHere();
-                }
-            }
-
-            return false;
+            b0 &= -2;
         }
+
+        this.dataWatcher.updateObject(16, Byte.valueOf(b0));
     }
 
-    /**
-     * Returns the volume for the sounds this mob makes.
-     */
-    protected float getSoundVolume()
+    public EntityLivingData onSpawnWithEgg(EntityLivingData par1EntityLivingData)
     {
-        return 0.4F * (float)this.getSlimeSize();
-    }
+        Object par1EntityLivingData1 = super.onSpawnWithEgg(par1EntityLivingData);
 
-    /**
-     * The speed it takes to move the entityliving's rotationPitch through the faceEntity method. This is only currently
-     * use in wolves.
-     */
-    public int getVerticalFaceSpeed()
-    {
-        return 0;
-    }
+        if (this.worldObj.rand.nextInt(100) == 0)
+        {
+            EntitySkeleton entityskeleton = new EntitySkeleton(this.worldObj);
+            entityskeleton.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, 0.0F);
+            entityskeleton.onSpawnWithEgg((EntityLivingData)null);
+            this.worldObj.spawnEntityInWorld(entityskeleton);
+            entityskeleton.mountEntity(this);
+        }
 
-    /**
-     * Returns true if the slime makes a sound when it jumps (based upon the slime's size)
-     */
-    protected boolean makesSoundOnJump()
-    {
-        return this.getSlimeSize() > 0;
-    }
+        if (par1EntityLivingData1 == null)
+        {
+            par1EntityLivingData1 = new SpiderEffectsGroupData();
 
-    /**
-     * Returns true if the slime makes a sound when it lands after a jump (based upon the slime's size)
-     */
-    protected boolean makesSoundOnLand()
-    {
-        return this.getSlimeSize() > 2;
+            if (this.worldObj.difficultySetting > 2 && this.worldObj.rand.nextFloat() < 0.1F * this.worldObj.getLocationTensionFactor(this.posX, this.posY, this.posZ))
+            {
+                ((SpiderEffectsGroupData)par1EntityLivingData1).func_111104_a(this.worldObj.rand);
+            }
+        }
+
+        if (par1EntityLivingData1 instanceof SpiderEffectsGroupData)
+        {
+            int i = ((SpiderEffectsGroupData)par1EntityLivingData1).field_111105_a;
+
+            if (i > 0 && Potion.potionTypes[i] != null)
+            {
+                this.addPotionEffect(new PotionEffect(i, Integer.MAX_VALUE));
+            }
+        }
+
+        return (EntityLivingData)par1EntityLivingData1;
     }
 }
