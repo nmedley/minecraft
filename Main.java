@@ -267,7 +267,7 @@ public class Main {
 		MinecraftForge.setBlockHarvestLevel(MyBlock_1, "pickaxe", 0);
 
 //  LOAD THE BLOCK 2
-        MyBlock_2 = new MyBlock(250, Material.rock, "MyBlock_2").setLightValue(0.0F).setResistance(40.0F).setHardness(4.8F).setStepSound(Block.soundGrassFootstep).setCreativeTab(MyCreativeTab_1);
+        MyBlock_2 = new MyBlock(251, Material.rock, "MyBlock_2").setLightValue(0.0F).setResistance(40.0F).setHardness(4.8F).setStepSound(Block.soundGrassFootstep).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerBlock(MyBlock_2, "MyBlock_2");
         LanguageRegistry.addName(MyBlock_2, "Death Head Ore"); 
 		MinecraftForge.setBlockHarvestLevel(MyBlock_2, "pickaxe", 0);
