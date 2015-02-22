@@ -2,6 +2,7 @@ package mymod.entity.zombie;
 
 import java.util.Calendar;
 
+import mymod.Main;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -63,6 +64,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
     {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(80.0D);
     }
 
     protected void entityInit()
@@ -133,7 +135,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
      */
     public EnumCreatureAttribute getCreatureAttribute()
     {
-        return EnumCreatureAttribute.UNDEAD;
+        return EnumCreatureAttribute.UNDEFINED;
     }
 
     /**
@@ -239,7 +241,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.appleGold.itemID, 4);
+                this.dropItem(Main.MyItem_1.itemID, 2);
             }
         }
         else
@@ -248,7 +250,7 @@ public class MyEntityZombie extends EntityMob implements IRangedAttackMob
 
             for (k = 0; k < j; ++k)
             {
-                this.dropItem(Item.firework.itemID, 2);
+                this.dropItem(Main.MyItem_1.itemID, 2);
             }
         }
 

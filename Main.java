@@ -13,8 +13,6 @@ import mymod.entity.abe.MyModelAbe;
 import mymod.entity.abe.MyRenderAbe;
 import mymod.entity.creeper.MyEntityCreeper;
 import mymod.entity.creeper.MyRenderCreeper;
-import mymod.entity.enderman.MyEntityEnderman;
-import mymod.entity.enderman.MyRenderEnderman;
 import mymod.entity.ghast.MyEntityGhast;
 import mymod.entity.ghast.MyRenderGhast;
 import mymod.entity.mechne.MyEntityMechne;
@@ -131,6 +129,9 @@ public class Main {
 
 //  DECLARE THE BLOCK
         public static Block MyBlock_1;
+        
+//  DECLARE THE BLOCK 2
+        public static Block MyBlock_2;        
 
 //  DECLARE THE ARMOR
         public static Item MyHelmet_1;
@@ -149,11 +150,7 @@ public class Main {
 
 //  DECLARE THE ARMOR MATERIAL
         															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
-        public static EnumArmorMaterial MyArmorMaterial_1 = EnumHelper.addArmorMaterial("Death Head", 200, new int[]{10, 12, 12, 10}, 10);
-
-//  DECLARE THE ARMOR MATERIAL
-        															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
-        public static EnumArmorMaterial MyArmorMaterial_3 = EnumHelper.addArmorMaterial("Death Head", 200, new int[]{8}, 10);
+        public static EnumArmorMaterial MyArmorMaterial_1 = EnumHelper.addArmorMaterial("Death Head", 200, new int[]{12, 14, 14, 12}, 10);
 
 //  DECLARE THE ARMOR NINJA MATERIAL
         															/**maxDamageFactor, damegeReductionAmountArray, enchanability */
@@ -231,30 +228,29 @@ public class Main {
 //  LOAD THE ITEM       
         MyItem_1 = new MyItem(2030, "MyItem_1").setCreativeTab(setCreativeTab).setMaxStackSize(64);setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyItem_1, "MyItem_1");
-        LanguageRegistry.addName(MyItem_1, "Death Head");	
+        LanguageRegistry.addName(MyItem_1, "Blood");	
 
 //  LOAD THE FOOD
    /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
-        MyFood_1 = new MyFood(2040, 8, 80.8F, true, "MyFood_1").setAlwaysEdible().setPotionEffect(Potion.hunger.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        MyFood_1 = new MyFood(2040, 8, 80.8F, true, "MyFood_1").setAlwaysEdible().setPotionEffect(Potion.invisibility.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyFood_1, "MyFood_1");
         LanguageRegistry.addName(MyFood_1, "Expeiment 1");
 
 //  LOAD THE LOVE
    /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
-        MyFood_2 = new MyFood(2041, 8, 80.8F, true, "MyFood_2").setAlwaysEdible().setPotionEffect(Potion.nightVision.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        MyFood_2 = new MyFood(2041, 0, 0.0F, true, "MyFood_2").setAlwaysEdible().setPotionEffect(Potion.nightVision.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyFood_2, "MyFood_2");
         LanguageRegistry.addName(MyFood_2, "Expeiment 2");
 
 //  LOAD THE die
    /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
-        MyFood_3 = new MyFood(2042, 8, 80.8F, true, "MyFood_3").setAlwaysEdible().setPotionEffect(Potion.heal.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        MyFood_3 = new MyFood(2042, 8, 80.8F, true, "MyFood_3").setAlwaysEdible().setPotionEffect(Potion.regeneration.id, 600, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyFood_3, "MyFood_3");
-        LanguageRegistry.addName(MyFood_3, "Lava-Die");
         LanguageRegistry.addName(MyFood_3, "Expeiment 3");
 
 //  LOAD THE GOM
    /** itemId, healAmount, saturationModifier (F), isWolfsFavoriteMeat, Texture Name  */ 
-        MyFood_4 = new MyFood(2043, 8, 80.8F, true, "MyFood_4").setAlwaysEdible().setPotionEffect(Potion.confusion.id, 60, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
+        MyFood_4 = new MyFood(2043, 0, 00.8F, true, "MyFood_4").setAlwaysEdible().setPotionEffect(Potion.wither.id, 80, 60, 1.0F).setCreativeTab(setCreativeTab).setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyFood_4, "MyFood_4");
         LanguageRegistry.addName(MyFood_4, "Expeiment 4");
 
@@ -269,6 +265,12 @@ public class Main {
         GameRegistry.registerBlock(MyBlock_1, "MyBlock_1");
         LanguageRegistry.addName(MyBlock_1, "Death Head Ore"); 
 		MinecraftForge.setBlockHarvestLevel(MyBlock_1, "pickaxe", 0);
+
+//  LOAD THE BLOCK 2
+        MyBlock_2 = new MyBlock(250, Material.rock, "MyBlock_2").setLightValue(0.0F).setResistance(40.0F).setHardness(4.8F).setStepSound(Block.soundGrassFootstep).setCreativeTab(MyCreativeTab_1);
+        GameRegistry.registerBlock(MyBlock_2, "MyBlock_2");
+        LanguageRegistry.addName(MyBlock_2, "Death Head Ore"); 
+		MinecraftForge.setBlockHarvestLevel(MyBlock_2, "pickaxe", 0);
 
 //  LOAD HELMET 
         MyHelmet_1 = new MyArmor(2060, MyArmorMaterial_1, 0, 0, "myarmor").setCreativeTab(MyCreativeTab_1);
@@ -308,12 +310,7 @@ public class Main {
 //  LOAD N BOOTS   
         MyBoots_2 = new MyNinjaArmor(2067, MyArmorMaterial_2, 0, 3, "myninjaarmor").setCreativeTab(MyCreativeTab_1);
         GameRegistry.registerItem(MyBoots_2, "MyBoots_2");
-        LanguageRegistry.addName(MyBoots_2, "Red Boots");    
-    
-//  LOAD N HELMET 
-        MyHelmet_3 = new MyNinjaArmor(2068, MyArmorMaterial_1, 0, 0, "mylavaarmor").setCreativeTab(MyCreativeTab_1);
-        GameRegistry.registerItem(MyHelmet_3, "MyHelmet_3");
-        LanguageRegistry.addName(MyHelmet_3, "Hero Bryan Helmet");    
+        LanguageRegistry.addName(MyBoots_2, "Red Boots");       
         
 //  LOAD BIOME
         MySwampBiome_1 = new MySwampBiome(31);
@@ -338,10 +335,6 @@ public class Main {
 
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntitySkeleton.class, "Death Skele", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 10, 10, 20, EnumCreatureType.monster, BiomeGenBase.jungle);
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 10, 10, 20, EnumCreatureType.monster, MyBiome_1);     
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 10, 10, 20, EnumCreatureType.monster, BiomeGenBase.swampland);        
-        EntityRegistry.addSpawn(MyEntitySkeleton.class, 10, 10, 20, EnumCreatureType.monster, BiomeGenBase.desert);
         registerEntityEgg(MyEntitySkeleton.class, (new Color(253, 181, 8)).getRGB(), (new Color(253, 181, 8)).getRGB());       
         RenderingRegistry.registerEntityRenderingHandler(MyEntitySkeleton.class, new MyRenderSkeleton(new MyModelSkeleton(), 0.3F));
         ModLoader.addLocalization("entity.Death Skele.name", "Death Skele");
@@ -363,18 +356,7 @@ public class Main {
 		// 	For no Pre-required achievement, use "(Achievement)null"
 
 //  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEntityWraith.class, "Ghost", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.jungle);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.swampland);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.plains);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.extremeHills);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.taiga);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.forest);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, BiomeGenBase.beach);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster, MyBiome_1);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster,BiomeGenBase.desert);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster,BiomeGenBase.sky);  
-        EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster,BiomeGenBase.beach);  
+        EntityRegistry.registerGlobalEntityID(MyEntityWraith.class, "Ghost", EntityRegistry.findGlobalUniqueEntityId());  
         registerEntityEgg(MyEntityWraith.class, (new Color(255, 255, 255)).getRGB(), (new Color(255, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityWraith.class, new MyRenderWraith(new MyModelWraith(), 0.3F));
         ModLoader.addLocalization("entity.Ghost.name", "Ghost");
@@ -393,7 +375,7 @@ public class Main {
         EntityRegistry.addSpawn(MyEntityWraith.class, 6, 1, 2, EnumCreatureType.monster,BiomeGenBase.sky);  
         registerEntityEgg(MyEntityZombie.class, (new Color(255, 255, 255)).getRGB(), (new Color(255, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityZombie.class, new MyRenderZombie());
-        ModLoader.addLocalization("entity.Ghost Soldier.name", "Ghost Soldier");  
+        ModLoader.addLocalization("entity.Ghost Soldier.name", "Dead Knight");  
 
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityMechne.class, "Ghost Mechne", EntityRegistry.findGlobalUniqueEntityId());
@@ -413,7 +395,7 @@ public class Main {
      
     //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityGhast.class, "Guardian of Ghasts", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityGhast.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.swampland);
+        EntityRegistry.addSpawn(MyEntityGhast.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.hell);
         EntityRegistry.addSpawn(MyEntityGhast.class, 10, 1, 1, EnumCreatureType.monster, MyBiome_1);     
         registerEntityEgg(MyEntityGhast.class, (new Color(0, 0, 0)).getRGB(), (new Color(255, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityGhast.class, new MyRenderGhast());
@@ -428,25 +410,18 @@ public class Main {
         ModLoader.addLocalization("entity.Blood.name", "Blood");     
 
     //  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEntityTobo.class, "Terror Of the Night", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.swampland);  
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.forest);  
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.jungle);  
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.jungleHills);  
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, BiomeGenBase.desert);        
-        EntityRegistry.addSpawn(MyEntityTobo.class, 2, 1, 1, EnumCreatureType.monster, MyBiome_1);  
+        EntityRegistry.registerGlobalEntityID(MyEntityTobo.class, "Terror Of the Night", EntityRegistry.findGlobalUniqueEntityId());  
+        EntityRegistry.addSpawn(MyEntityTobo.class, 1, 1, 1, EnumCreatureType.monster, MyBiome_1);  
         registerEntityEgg(MyEntityTobo.class, (new Color(225, 0, 0)).getRGB(), (new Color(0, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityTobo.class, new MyRenderTobo(new MyModelTobo(), 0.3F));
         ModLoader.addLocalization("entity.Terror Of the Night.name", "Terror Of the Night");     
 
     //  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEntityOgre.class, "Ogre", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityOgre.class, 50, 1, 5, EnumCreatureType.monster, BiomeGenBase.swampland);  
-        EntityRegistry.addSpawn(MyEntityOgre.class, 50, 1, 5, EnumCreatureType.monster, BiomeGenBase.hell);  
-        EntityRegistry.addSpawn(MyEntityOgre.class, 50, 1, 5, EnumCreatureType.monster, MyBiome_1);  
+        EntityRegistry.registerGlobalEntityID(MyEntityOgre.class, "Lord Of The Night", EntityRegistry.findGlobalUniqueEntityId()); 
         registerEntityEgg(MyEntityOgre.class, (new Color(255, 0, 0)).getRGB(), (new Color(255, 216, 0)).getRGB());
+        EntityRegistry.addSpawn(MyEntityTobo.class, 1, 1, 1, EnumCreatureType.monster, MyBiome_1);          
         RenderingRegistry.registerEntityRenderingHandler(MyEntityOgre.class, new MyRenderOgre(new MyModelOgre(), 0.3F));
-        ModLoader.addLocalization("entity.Ogre.name", "Ogre");
+        ModLoader.addLocalization("entity.Lord Of The Night.name", "Lord Of The Night");
 
     //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityAbe.class, "Abe", EntityRegistry.findGlobalUniqueEntityId());
@@ -458,19 +433,9 @@ public class Main {
      
 //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityPig.class, "Mutant Pig", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityPig.class, 6, 1, 5, EnumCreatureType.monster, BiomeGenBase.jungle);
-        EntityRegistry.addSpawn(MyEntityPig.class, 6, 1, 5, EnumCreatureType.monster, MyBiome_1);     
         registerEntityEgg(MyEntityPig.class, (new Color(236, 147, 149)).getRGB(), (new Color(255, 255, 255)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityPig.class, new MyRenderPig(new MyModelPig(), 0.3F));
         ModLoader.addLocalization("entity.Mutant Pig.name", "Mutant Pig");     
-
-    //  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEntityEnderman.class, "My Awesome Mob", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityEnderman.class, 1, 1, 1, EnumCreatureType.monster, BiomeGenBase.desert); 
-        EntityRegistry.addSpawn(MyEntityEnderman.class, 1, 1, 1, EnumCreatureType.monster, MyBiome_1);     
-        registerEntityEgg(MyEntityEnderman.class, (new Color(0, 255, 0)).getRGB(), (new Color(255, 0, 0)).getRGB());
-        RenderingRegistry.registerEntityRenderingHandler(MyEntityEnderman.class, new MyRenderEnderman());
-        ModLoader.addLocalization("entity.My Awesome Mob.name", "Lord Of The Night");
      
 /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */	
 	}
@@ -492,7 +457,7 @@ private void setCreativeTab(Object myCreativeTab_12) {
                 " X ",
                 " X ",
                 " S ",
-            'S', Item.stick,
+            'S', Item.bone,
             'X',MyItem_1,
         }); 
 
@@ -504,20 +469,18 @@ private void setCreativeTab(Object myCreativeTab_12) {
                 "XXX",
                 " S ",
                 " S ",
-            'S', Item.stick,
+            'S', Item.bone,
             'X',MyItem_1,
-        });
-
-//  ITEM RECIPE         
-        GameRegistry.addRecipe(new ItemStack(MyItem_1, 4), new Object[]
-        {
-                " X ",                
-                "S S",
-                " S ",
-            'X', Item.appleRed,            
-            'S', Block.dirt,
         });	
 
+
+//  Item RECIPE  
+        GameRegistry.addRecipe(new ItemStack(MyItem_1, 1), new Object[]
+        {
+                "S",
+            'S', Item.ingotIron,
+        });
+        
 //  FOOD RECIPE         
         GameRegistry.addRecipe(new ItemStack(MyFood_1, 2), new Object[]
         {
@@ -548,6 +511,13 @@ private void setCreativeTab(Object myCreativeTab_12) {
         		"S",
         		"S",
             'S', MyItem_1,
+        });
+
+//  GOM RECIPE         
+        GameRegistry.addRecipe(new ItemStack(MyBlock_2, 2), new Object[]
+        {
+        		"SS",
+            'S', Block.cobblestone,
         });
 
 //  SMELTING RECIPE
@@ -622,14 +592,6 @@ private void setCreativeTab(Object myCreativeTab_12) {
             "X X",
         'X', MyFood_1,
     });
-
-//  HELMET N RECIPE   
-    GameRegistry.addRecipe(new ItemStack(MyHelmet_3, 1), new Object[]
-    {
-            "X X",
-        'X', MyItem_1,
-    });
-
 /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */	
 
 

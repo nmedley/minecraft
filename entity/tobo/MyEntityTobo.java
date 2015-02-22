@@ -1,5 +1,6 @@
 package mymod.entity.tobo;
 
+import mymod.Main;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -219,7 +220,7 @@ public class MyEntityTobo extends EntityMob
             {
                 this.dropItem(Block.anvil.blockID, 1);
             }
-                this.dropItem(Block.bedrock.blockID, 4);        
+                this.dropItem(Main.MyItem_1.itemID, 4);        
         }
     }
 

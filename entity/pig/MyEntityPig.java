@@ -1,64 +1,48 @@
 package mymod.entity.pig;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.entity.Entity;
+import mymod.Main;
+import net.minecraft.block.Block;
+import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
-import net.minecraft.entity.ai.EntityAIAvoidEntity;
-import net.minecraft.entity.ai.EntityAICreeperSwell;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.entity.ai.EntityAIFollowParent;
 import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
+import net.minecraft.entity.ai.EntityAIMate;
+import net.minecraft.entity.ai.EntityAIPanic;
 import net.minecraft.entity.ai.EntityAISwimming;
+import net.minecraft.entity.ai.EntityAITempt;
 import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.effect.EntityLightningBolt;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.passive.EntityOcelot;
+import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
+import net.minecraft.item.ItemSeeds;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-public class MyEntityPig extends EntityMob
+public class MyEntityPig extends EntityAnimal
 {
-    /**
-     * Time when this creeper was last in an active state (Messed up code here, probably causes creeper animation to go
-     * weird)
-     */
-    private int lastActiveTime;
+    public float field_70886_e;
+    public float destPos;
+    public float field_70884_g;
+    public float field_70888_h;
+    public float field_70889_i = 1.0F;
 
-    /**
-     * The amount of time since the creeper was close enough to the player to ignite
-     */
-    private int timeSinceIgnited;
-    private int fuseTime = 30;
-
-    /** Explosion radius for this creeper. */
-    private int explosionRadius = 3;
+    /** The time until the next egg is spawned. */
+    public int timeUntilNextEgg;
 
     public MyEntityPig(World par1World)
     {
         super(par1World);
-        this.tasks.addTask(1, new EntityAISwimming(this));
-        //this.tasks.addTask(2, new EntityAICreeperSwell(this));
-        this.tasks.addTask(3, new EntityAIAvoidEntity(this, EntityOcelot.class, 6.0F, 1.0D, 1.2D));
-        this.tasks.addTask(4, new EntityAIAttackOnCollide(this, 1.0D, false));
-        this.tasks.addTask(5, new EntityAIWander(this, 0.8D));
-        this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-        this.tasks.addTask(6, new EntityAILookIdle(this));
-        this.targetTasks.addTask(1, new EntityAINearestAttackableTarget(this, EntityPlayer.class, 0, true));
-        this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, false));
-    }
-
-    protected void applyEntityAttributes()
-    {
-        super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(20.0D);       
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.25D);
+        this.setSize(0.3F, 0.7F);
+        this.timeUntilNextEgg = this.rand.nextInt(6) + 6;
+        this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(1, new EntityAIPanic(this, 8.4D));
+        this.tasks.addTask(2, new EntityAIMate(this, 1.0D));
+        this.tasks.addTask(3, new EntityAITempt(this, 1.0D, Main.MyFood_1.itemID, false));
+        this.tasks.addTask(4, new EntityAIFollowParent(this, 1.6D));
+        this.tasks.addTask(5, new EntityAIWander(this, 1.1D));
+        this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 4.0F));
+        this.tasks.addTask(7, new EntityAILookIdle(this));
     }
 
     /**
@@ -69,115 +53,68 @@ public class MyEntityPig extends EntityMob
         return true;
     }
 
-    /**
-     * The number of iterations PathFinder.getSafePoint will execute before giving up.
-     */
-    public int getMaxSafePointTries()
+    protected void applyEntityAttributes()
     {
-        return this.getAttackTarget() == null ? 3 : 3 + (int)(this.getHealth() - 1.0F);
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setAttribute(20.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setAttribute(0.30000001192092896D);
+    }
+
+    /**
+     * Called frequently so the entity can update its state every tick as required. For example, zombies and skeletons
+     * use this to react to sunlight and start to burn.
+     */
+    public void onLivingUpdate()
+    {
+        super.onLivingUpdate();
+        this.field_70888_h = this.field_70886_e;
+        this.field_70884_g = this.destPos;
+        this.destPos = (float)((double)this.destPos + (double)(this.onGround ? -1 : 4) * 0.3D);
+
+        if (this.destPos < 0.0F)
+        {
+            this.destPos = 0.0F;
+        }
+
+        if (this.destPos > 1.0F)
+        {
+            this.destPos = 1.0F;
+        }
+
+        if (!this.onGround && this.field_70889_i < 1.0F)
+        {
+            this.field_70889_i = 1.0F;
+        }
+
+        this.field_70889_i = (float)((double)this.field_70889_i * 0.9D);
+
+        if (!this.onGround && this.motionY < 0.0D)
+        {
+            this.motionY *= 0.6D;
+        }
+
+        this.field_70886_e += this.field_70889_i * 2.0F;
+
+        if (!this.isChild() && !this.worldObj.isRemote && --this.timeUntilNextEgg <= 0)
+        {
+            this.playSound("mob.chicken.plop", 1.0F, (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
+            this.dropItem(Item.diamond.itemID, 1);
+            this.timeUntilNextEgg = this.rand.nextInt(600000000) + 600000000;
+        }
     }
 
     /**
      * Called when the mob is falling. Calculates and applies fall damage.
      */
-    protected void fall(float par1)
-    {
-        super.fall(par1);
-        this.timeSinceIgnited = (int)((float)this.timeSinceIgnited + par1 * 1.5F);
-
-        if (this.timeSinceIgnited > this.fuseTime - 5)
-        {
-            this.timeSinceIgnited = this.fuseTime - 5;
-        }
-    }
-
-    protected void entityInit()
-    {
-        super.entityInit();
-        this.dataWatcher.addObject(16, Byte.valueOf((byte) - 1));
-        this.dataWatcher.addObject(17, Byte.valueOf((byte)0));
-    }
+    protected void fall(float par1) {}
 
     /**
-     * (abstract) Protected helper method to write subclass entity data to NBT.
+     * Returns the sound this mob makes while it's alive.
      */
-    public void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
+    protected String getLivingSound()
     {
-        super.writeEntityToNBT(par1NBTTagCompound);
+        return "none";
 
-        if (this.dataWatcher.getWatchableObjectByte(17) == 1)
-        {
-            par1NBTTagCompound.setBoolean("powered", true);
-        }
-
-        par1NBTTagCompound.setShort("Fuse", (short)this.fuseTime);
-        par1NBTTagCompound.setByte("ExplosionRadius", (byte)this.explosionRadius);
-    }
-
-    /**
-     * (abstract) Protected helper method to read subclass entity data from NBT.
-     */
-    public void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
-    {
-        super.readEntityFromNBT(par1NBTTagCompound);
-        this.dataWatcher.updateObject(17, Byte.valueOf((byte)(par1NBTTagCompound.getBoolean("powered") ? 1 : 0)));
-
-        if (par1NBTTagCompound.hasKey("Fuse"))
-        {
-            this.fuseTime = par1NBTTagCompound.getShort("Fuse");
-        }
-
-        if (par1NBTTagCompound.hasKey("ExplosionRadius"))
-        {
-            this.explosionRadius = par1NBTTagCompound.getByte("ExplosionRadius");
-        }
-    }
-
-    /**
-     * Called to update the entity's position/logic.
-     */
-    public void onUpdate()
-    {
-        if (this.isEntityAlive())
-        {
-            this.lastActiveTime = this.timeSinceIgnited;
-            int i = this.getCreeperState();
-
-            if (i > 0 && this.timeSinceIgnited == 0)
-            {
-                this.playSound("random.fuse", 1.0F, 0.5F);
-            }
-
-            this.timeSinceIgnited += i;
-
-            if (this.timeSinceIgnited < 0)
-            {
-                this.timeSinceIgnited = 0;
-            }
-
-            if (this.timeSinceIgnited >= this.fuseTime)
-            {
-                this.timeSinceIgnited = this.fuseTime;
-
-                if (!this.worldObj.isRemote)
-                {
-                    boolean flag = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-
-                    if (this.getPowered())
-                    {
-                        this.worldObj.createExplosion(this, this.posX, this.posY, this.posZ, (float)(this.explosionRadius * 2), flag);
-                    }
-                    else
-                    {
-                        this.worldObj.createExplosion(this, this.posX, this.posY, this.posZ, (float)this.explosionRadius, flag);
-                    }
-
-                    this.setDead();
-                }
-            }
-        }
-
-        super.onUpdate();
     }
 
     /**
@@ -185,7 +122,7 @@ public class MyEntityPig extends EntityMob
      */
     protected String getHurtSound()
     {
-        return "mob.creeper.say";
+        return "mob.ghast.moan";
     }
 
     /**
@@ -193,44 +130,15 @@ public class MyEntityPig extends EntityMob
      */
     protected String getDeathSound()
     {
-        return "mob.creeper.death";
+        return "mob.horse.zombie.death";
     }
 
     /**
-     * Called when the mob's health reaches 0.
+     * Plays step sound at given x, y, z for the entity
      */
-    public void onDeath(DamageSource par1DamageSource)
+    protected void playStepSound(int par1, int par2, int par3, int par4)
     {
-        super.onDeath(par1DamageSource);
-
-        if (par1DamageSource.getEntity() instanceof EntitySkeleton)
-        {
-            int i = Item.record13.itemID + this.rand.nextInt(Item.recordWait.itemID - Item.record13.itemID + 1);
-            this.dropItem(i, 1);
-        }
-    }
-
-    public boolean attackEntityAsMob(Entity par1Entity)
-    {
-        return true;
-    }
-
-    /**
-     * Returns true if the creeper is powered by a lightning bolt.
-     */
-    public boolean getPowered()
-    {
-        return this.dataWatcher.getWatchableObjectByte(17) == 1;
-    }
-
-    @SideOnly(Side.CLIENT)
-
-    /**
-     * Params: (Float)Render tick. Returns the intensity of the creeper's flash when it is ignited.
-     */
-    public float getCreeperFlashIntensity(float par1)
-    {
-        return ((float)this.lastActiveTime + (float)(this.timeSinceIgnited - this.lastActiveTime) * par1) / (float)(this.fuseTime - 2);
+        this.playSound("mob.wither.death", 0.15F, 1.0F);
     }
 
     /**
@@ -238,31 +146,68 @@ public class MyEntityPig extends EntityMob
      */
     protected int getDropItemId()
     {
-        return Item.gunpowder.itemID;
+        return Item.appleGold.itemID;
     }
 
     /**
-     * Returns the current state of creeper, -1 is idle, 1 is 'in fuse'
+     * Drop 0-2 items of this living's type. @param par1 - Whether this entity has recently been hit by a player. @param
+     * par2 - Level of Looting used to kill this mob.
      */
-    public int getCreeperState()
+    protected void dropFewItems(boolean par1, int par2)
     {
-        return this.dataWatcher.getWatchableObjectByte(16);
+    	int j = this.rand.nextInt(3) + this.rand.nextInt(1 + par2);
+
+    	for (int k = 0; k < j; ++k)
+    	{
+    		this.dropItem(Block.cobblestoneMossy.blockID, 20);
+    	}
+
+    	{
+    		this.dropItem(Item.redstone.itemID, 2);
+    	}
+
+    	{
+    		this.dropItem(Block.mobSpawner.blockID, 1);
+    	}
+
+    	{
+    		this.dropItem(Block.vine.blockID, 12);
+    	}
+
+    	{
+    		this.dropItem(Main.MyFood_5.itemID, 2);
+    	}
+
+    	{                  
+    		this.dropItem(Item.minecartCrate.itemID, 1);
+    	}
+
+    }  
+
+    {
+    }
+
+     
+    
+    /**
+     * This function is used when two same-species animals in 'love mode' breed to generate the new baby animal.
+     */
+    public MyEntityPig spawnBabyAnimal(EntityAgeable par1EntityAgeable)
+    {
+        return new MyEntityPig(this.worldObj);
     }
 
     /**
-     * Sets the state of creeper, -1 to idle and 1 to be 'in fuse'
+     * Checks if the parameter is an item which this animal can be fed to breed it (wheat, carrots or seeds depending on
+     * the animal type)
      */
-    public void setCreeperState(int par1)
+    public boolean isBreedingItem(ItemStack par1ItemStack)
     {
-        this.dataWatcher.updateObject(16, Byte.valueOf((byte)par1));
+        return par1ItemStack != null && par1ItemStack.getItem() instanceof ItemSeeds;
     }
 
-    /**
-     * Called when a lightning bolt hits the entity.
-     */
-    public void onStruckByLightning(EntityLightningBolt par1EntityLightningBolt)
+    public EntityAgeable createChild(EntityAgeable par1EntityAgeable)
     {
-        super.onStruckByLightning(par1EntityLightningBolt);
-        this.dataWatcher.updateObject(17, Byte.valueOf((byte)1));
+        return this.spawnBabyAnimal(par1EntityAgeable);
     }
 }
