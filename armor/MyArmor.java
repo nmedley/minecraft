@@ -65,7 +65,7 @@ public class MyArmor extends ItemArmor{
     /** Makes your Item Enchanted when it is crafted */
         public void onCreated(ItemStack item, World world, EntityPlayer player) 
         {
-            item.addEnchantment(Enchantment.fireProtection, 10);
+            item.addEnchantment(Enchantment.featherFalling, 20);
             // Replace the "." after "Enchantment" to see options
             // The number is the Enchantment Level
         }

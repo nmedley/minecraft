@@ -339,14 +339,6 @@ public class Main {
         RenderingRegistry.registerEntityRenderingHandler(MyEntitySkeleton.class, new MyRenderSkeleton(new MyModelSkeleton(), 0.3F));
         ModLoader.addLocalization("entity.Death Skele.name", "Death Skele");
 
-//  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEnitiyMinion.class, "Lightning Steve", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEnitiyMinion.class, 15, 8, 28, EnumCreatureType.creature, BiomeGenBase.forest);     
-        EntityRegistry.addSpawn(MyEnitiyMinion.class, 15, 8, 28, EnumCreatureType.monster, MyBiome_1);  
-        registerEntityEgg(MyEnitiyMinion.class, (new Color(239, 231, 23)).getRGB(), (new Color(253, 181, 8)).getRGB());
-        RenderingRegistry.registerEntityRenderingHandler(MyEnitiyMinion.class, new MyRenderMinion(new MyModelMinion(), 0.3F));
-        ModLoader.addLocalization("entity.Lightning Steve.name", "Lightning Steve");
-
 
 //	LOAD THE ACHIEVEMENTS                                                   
 		MyAchievement_1 = new Achievement(2001, "MyAchievement_1", -1, -1, MyPickaxe_1, AchievementList.openInventory).registerAchievement();
@@ -399,15 +391,7 @@ public class Main {
         EntityRegistry.addSpawn(MyEntityGhast.class, 10, 1, 1, EnumCreatureType.monster, MyBiome_1);     
         registerEntityEgg(MyEntityGhast.class, (new Color(0, 0, 0)).getRGB(), (new Color(255, 0, 0)).getRGB());
         RenderingRegistry.registerEntityRenderingHandler(MyEntityGhast.class, new MyRenderGhast());
-        ModLoader.addLocalization("entity.Guardian of Ghasts.name", "Guardian of Ghasts");    
-     
- //  REGISTER YOUR ENTITY
-        EntityRegistry.registerGlobalEntityID(MyEntityCreeper.class, "Blood", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.addSpawn(MyEntityCreeper.class, 10, 1, 5, EnumCreatureType.monster, BiomeGenBase.swampland); 
-        EntityRegistry.addSpawn(MyEntityCreeper.class, 10, 1, 5, EnumCreatureType.monster, MyBiome_1);     
-        registerEntityEgg(MyEntityCreeper.class, (new Color(0, 255, 0)).getRGB(), (new Color(255, 0, 0)).getRGB());
-        RenderingRegistry.registerEntityRenderingHandler(MyEntityCreeper.class, new MyRenderCreeper());
-        ModLoader.addLocalization("entity.Blood.name", "Blood");     
+        ModLoader.addLocalization("entity.Guardian of Ghasts.name", "Guardian of Ghasts");        
 
     //  REGISTER YOUR ENTITY
         EntityRegistry.registerGlobalEntityID(MyEntityTobo.class, "Terror Of the Night", EntityRegistry.findGlobalUniqueEntityId());  
