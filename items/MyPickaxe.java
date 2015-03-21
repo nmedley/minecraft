@@ -33,7 +33,7 @@ public class MyPickaxe extends ItemPickaxe {
     /** Makes your Item Enchanted when it is crafted */
         public void onCreated(ItemStack item, World world, EntityPlayer player) 
         {
-            item.addEnchantment(Enchantment.sharpness, 100);
+            item.addEnchantment(Enchantment.fortune, 10);
             // Replace the "." after "Enchantment" to see options
             // The number is the Enchantment Level
         }
